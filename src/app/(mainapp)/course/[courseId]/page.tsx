@@ -80,10 +80,10 @@ export default async function CoursePage({
     const course = courseId ? COURSES[courseId as keyof typeof COURSES] : null;
 
     return (
-        <div className="min-h-screen flex flex-col bg-ivory">
+        <div className="min-h-screen flex flex-col bg-gradient-main">
           {/* <Navbar isScrolled={isScrolled} /> */}
           
-          <main className="flex-grow pt-24">
+          <main className="flex-grow">
             <div className="container mx-auto px-4">
               {/* Back button */}
               <Link href="/home">
@@ -103,8 +103,6 @@ export default async function CoursePage({
               
               {/* Videos Grid */}
               <div className="mb-16">
-                <h2 className="text-2xl font-semibold text-indigo mb-6">Course Content</h2>
-                
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {course?.videos.map((video) => (
                     <VideoCard

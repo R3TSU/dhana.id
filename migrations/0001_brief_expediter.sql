@@ -1,0 +1,1 @@
+ALTER TABLE "lessons" ADD COLUMN "day_number" integer DEFAULT 1 NOT NULL;

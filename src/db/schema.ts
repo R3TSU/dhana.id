@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, timestamp, jsonb, pgEnum, index, uniqueIndex } from 'drizzle-orm/pg-core';
 
 // CREATE TABLE users (
 //     id SERIAL PRIMARY KEY,
@@ -20,4 +20,36 @@ export const users = pgTable('users', {
     role: text('role').default('user'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
-});
+}, (table) => [
+    index("clerk_user_id_idx").on(table.clerk_user_id),
+]);
+
+export const courses = pgTable('courses', {
+    id: serial('id').primaryKey(),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    description: text('description'),   
+    thumbnail_url: text('thumbnail_url'),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').defaultNow(),
+}, (table) => [
+    index("courses_slug_idx").on(table.slug),
+    uniqueIndex("courses_title_idx").on(table.title)
+]);
+
+export const lessons = pgTable('lessons', {
+    id: serial('id').primaryKey(),
+    course_id: integer('course_id').notNull().references(() => courses.id),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    description: text('description'),
+    thumbnail_url: text('thumbnail_url'),
+    video_url: text('video_url').notNull(),
+    day_number: integer('day_number').notNull().default(1),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').defaultNow(),
+}, (table) => [
+    index("lessons_course_id_idx").on(table.course_id),
+    index("lessons_slug_idx").on(table.slug),
+    uniqueIndex("lessons_title_idx").on(table.title)
+]);

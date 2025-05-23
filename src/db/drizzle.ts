@@ -5,12 +5,18 @@ import { config } from 'dotenv';
 // Load environment variables
 config({ path: '.env' });
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not defined');
-}
+// For multi-branch setup
+const getBranchUrl = () => {
+  const env = process.env.NODE_ENV;
+  if (env === 'development') {
+    return process.env.DEV_DATABASE_URL;
+  } else if (env === 'test') {
+    return process.env.TEST_DATABASE_URL;
+  }
+  return process.env.DATABASE_URL;
+};
 
-// Create Neon SQL client - specific to Neon
-const sql = neon(process.env.DATABASE_URL);
+const sql = neon(getBranchUrl()!);
 
 // Create Drizzle instance with neon-http adapter
 export const db = drizzle({ client: sql });

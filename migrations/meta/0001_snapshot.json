@@ -1,6 +1,6 @@
 {
-  "id": "5d3d26bf-95ff-4d94-8b9d-fa8279d84eb7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "d039780c-d64a-4cf2-8b6e-fb469e2e1245",
+  "prevId": "5d3d26bf-95ff-4d94-8b9d-fa8279d84eb7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -145,6 +145,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "day_number": {
+          "name": "day_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         },
         "created_at": {
           "name": "created_at",

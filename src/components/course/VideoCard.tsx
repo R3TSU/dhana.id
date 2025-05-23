@@ -29,14 +29,14 @@ interface VideoCardProps {
             )}
           />
           {available ? (
-            <div className="absolute inset-0 bg-indigo/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="w-12 h-12 bg-coral rounded-full flex items-center justify-center">
                 <Play size={20} className="text-white ml-1" />
               </div>
             </div>
           ) : (
             <div className="absolute inset-0 bg-charcoal/50 flex flex-col items-center justify-center">
-              <div className="bg-indigo/90 px-4 py-2 rounded-md">
+              <div className="bg-violet-500/90 px-4 py-2 rounded-md">
                 <p className="text-white font-medium">Available {availableDate}</p>
               </div>
             </div>
@@ -49,14 +49,14 @@ interface VideoCardProps {
           {available ? (
             <Link href={`/lesson/${id}`}>
             <Button 
-              className="bg-indigo hover:bg-coral text-white transition-colors mt-auto"
+              className="bg-lavender hover:bg-violet-500 w-full cursor-pointer text-white transition-colors mt-auto"
             >
               Watch Now <Play size={16} className="ml-2" />
             </Button>
             </Link>
           ) : (
             <Button 
-              className="bg-gray-300 text-gray-600 cursor-not-allowed mt-auto"
+              className="bg-lavender text-gray-600 cursor-not-allowed w-full mt-auto"
               disabled
             >
               Coming Soon

@@ -13,10 +13,10 @@ export default async function LessonPage({
   const { lessonId } = await params
     
     return (
-      <div className="min-h-screen flex flex-col bg-ivory">
+      <div className="min-h-screen flex flex-col bg-gradient-main">
         {/* <Navbar isScrolled={isScrolled} /> */}
         
-        <main className="flex-grow pt-24">
+        <main className="flex-grow">
           <div className="container mx-auto px-4">
             {/* Back button */}
             <Link href={`/course/${lessonId}`}>
@@ -37,7 +37,7 @@ export default async function LessonPage({
               {/* Video Content */}
               <div className="lg:col-span-2">
                 {/* Video Title and Description */}
-                <div className="bg-white rounded-lg p-6 shadow-md mb-6">
+                <div className="bg-gray-100 rounded-lg p-6 shadow-md mb-6">
                   <h1 className="text-3xl font-bold text-indigo mb-4">{lessonId}</h1>
                   <div className="text-charcoal/80 whitespace-pre-line">
                     {lessonId}

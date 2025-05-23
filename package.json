@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.816.0",
     "@clerk/nextjs": "^6.19.5",
     "@neondatabase/serverless": "^1.0.0",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@strapi/client": "^1.4.0",
@@ -26,7 +29,8 @@
     "react-dom": "^19.0.0",
     "react-share-lite": "^1.1.0",
     "tailwind-merge": "^3.3.0",
-    "task-master-ai": "^0.14.0"
+    "task-master-ai": "^0.14.0",
+    "zod": "^3.25.23"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

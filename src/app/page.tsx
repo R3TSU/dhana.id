@@ -1,6 +1,7 @@
 import { GetStarted } from "@/components/GetStarted";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export default async function Home() {
   const { userId } = await auth();
@@ -10,7 +11,8 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-ivory">
+    <>
+    <div className="min-h-screen flex flex-col bg-gradient-main">
       {/* <Navbar isScrolled={isScrolled} /> */}
       
       {/* Hero Section */}
@@ -22,7 +24,7 @@ export default async function Home() {
             backgroundBlendMode: "overlay",
           }}
         >
-          <div className="absolute inset-0 bg-indigo/50"></div>
+          <div className="absolute inset-0 bg-dark-blue/80 backdrop-blur-sm"></div>
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -40,5 +42,7 @@ export default async function Home() {
         </div>
       </section>
     </div>
+    <Footer />
+    </>
   );
 }
