@@ -24,7 +24,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-main">
+    <div className="min-h-screen flex flex-col mb-12">
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-12"> {/* Added py-12 for vertical spacing */}
           <h1 className="text-4xl font-bold text-center text-indigo mb-10">Explore Our Courses</h1>

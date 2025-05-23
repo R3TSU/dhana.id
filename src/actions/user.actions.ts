@@ -117,3 +117,60 @@ export async function completeUserProfile(
   // To satisfy TypeScript if redirect doesn't throw in all test environments:
   // return { success: true }; 
 }
+
+// Schema for updating profile (only fullName for now)
+const updateUserProfileSchema = z.object({
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+});
+
+export async function updateUserProfile(
+  prevState: any, 
+  formData: FormData
+): Promise<{
+  success: boolean;
+  message?: string; // General message for success/error
+  fieldErrors?: Partial<Record<"fullName", string[]>>;
+}> {
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
+    return { success: false, message: "User not authenticated." };
+  }
+
+  const rawFormData = {
+    fullName: formData.get("fullName") as string,
+  };
+
+  const validation = updateUserProfileSchema.safeParse(rawFormData);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      message: "Invalid input.",
+      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName", string[]>>,
+    };
+  }
+
+  const { fullName } = validation.data;
+
+  try {
+    const internalUser = await getInternalUserByClerkId(clerkUserId);
+
+    if (!internalUser) {
+      return { success: false, message: "User profile not found." };
+    }
+
+    await db.update(users)
+      .set({
+        fullName: fullName,
+        // Ensure updatedAt is handled by schema's $onUpdate or manually set here if needed
+      })
+      .where(eq(users.id, internalUser.id));
+
+    revalidatePath("/profile");
+    return { success: true, message: "Profile updated successfully!" };
+
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return { success: false, message: "An unexpected error occurred. Please try again." };
+  }
+}

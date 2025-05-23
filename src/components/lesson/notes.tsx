@@ -1,9 +1,9 @@
 "use client";
 
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button"; // Added Button
 import { useState, useEffect, useCallback } from "react";
 import { getLessonNote, upsertLessonNote } from "@/actions/lessonNotes.actions";
-import { useDebounce } from "@uidotdev/usehooks"; // A popular debounce hook, or use any other
 
 interface NotesProps {
   lessonId: number;
@@ -15,8 +15,6 @@ export default function Notes({ lessonId }: NotesProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-
-  const debouncedNoteContent = useDebounce(noteContent, 1000); // Debounce for 1 second
 
   // Fetch initial note
   useEffect(() => {
@@ -45,8 +43,9 @@ export default function Notes({ lessonId }: NotesProps) {
     fetchNote();
   }, [lessonId]);
 
-  // Save note (debounced)
-  const saveNote = useCallback(async (contentToSave: string) => {
+  // Save note
+  const handleSaveNote = useCallback(async () => {
+    const contentToSave = noteContent; // Use current noteContent
     if (!lessonId) return;
     
     setIsSaving(true);
@@ -75,16 +74,7 @@ export default function Notes({ lessonId }: NotesProps) {
     setTimeout(() => setStatusMessage(null), 3000);
   }, [lessonId]);
 
-  useEffect(() => {
-    // Trigger save only if content has actually changed from initial load and not currently loading
-    if (!isLoading && debouncedNoteContent !== undefined) { // Check if debouncedNoteContent is not the initial undefined from useDebounce
-        // Further check: only save if it's different from what was initially loaded or last saved successfully
-        // This prevents saving an empty note on load if the user hasn't typed anything yet.
-        // For simplicity here, we save whenever debounced content changes after initial load.
-        // A more robust check might involve comparing with the initially fetched note content.
-        saveNote(debouncedNoteContent);
-    }
-  }, [debouncedNoteContent, isLoading, saveNote]);
+
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNoteContent(e.target.value);
@@ -97,7 +87,7 @@ export default function Notes({ lessonId }: NotesProps) {
       <div className="bg-white rounded-lg p-6 shadow-md h-full flex flex-col">
         <h3 className="text-xl font-semibold text-indigo mb-2">My Journal</h3>
         <p className="text-charcoal/80 text-sm mb-4">
-          Take notes as you watch the video. Your notes are saved automatically.
+          Take notes as you watch the video. Click the button below to save your notes.
         </p>
         <Textarea
           className="min-h-[300px] border-indigo/30 focus:border-indigo flex-grow"
@@ -106,7 +96,11 @@ export default function Notes({ lessonId }: NotesProps) {
           onChange={handleTextChange}
           disabled={isLoading}
         />
-        <div className="text-xs text-gray-500 mt-2 h-4">
+        <div className="mt-4 flex justify-between items-center">
+          <Button onClick={handleSaveNote} disabled={isLoading || isSaving}>
+            {isSaving ? 'Saving...' : 'Save Notes'}
+          </Button>
+          <div className="text-xs text-gray-500 h-4 flex-grow text-right">
           {isSaving && <span className="text-blue-500">Saving...</span>}
           {statusMessage && !isSaving && (
             <span className={error ? "text-red-500" : "text-green-500"}>
@@ -118,5 +112,6 @@ export default function Notes({ lessonId }: NotesProps) {
         </div>
       </div>
     </div>
+  </div>
   );
 }   

@@ -138,3 +138,46 @@ export async function enrollInCourse(courseId: number): Promise<{
     return { enrollment: null, error: "Failed to enroll in course.", success: false };
   }
 }
+
+/**
+ * Fetches the enrollment date for the current user for a specific course.
+ */
+export async function getUserEnrollmentForCourse(courseId: number): Promise<{
+  enrollmentDate: Date | null;
+  error: string | null;
+}> {
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
+    return { enrollmentDate: null, error: "User not authenticated." };
+  }
+
+  const internalUserId = await getInternalUserIdFromClerkId(clerkUserId);
+
+  if (!internalUserId) {
+    // This case implies the user is authenticated with Clerk but doesn't have an internal user record.
+    // Middleware should ideally redirect them to /complete-profile.
+    // For content dripping, if they don't have an internal record, they effectively aren't enrolled in our system's terms.
+    return { enrollmentDate: null, error: "User profile not found." };
+  }
+
+  try {
+    const enrollment = await db.query.course_enrollments.findFirst({
+      where: and(
+        eq(course_enrollments.courseId, courseId),
+        eq(course_enrollments.userId, internalUserId)
+      ),
+      columns: { enrollmentDate: true },
+    });
+
+    if (enrollment && enrollment.enrollmentDate) {
+      return { enrollmentDate: enrollment.enrollmentDate, error: null };
+    } else {
+      // Not enrolled or enrollmentDate is missing (though schema has defaultNow())
+      return { enrollmentDate: null, error: "User not enrolled in this course." }; 
+    }
+  } catch (err) {
+    console.error("Error fetching user enrollment for course:", err);
+    return { enrollmentDate: null, error: "Failed to fetch enrollment details." };
+  }
+}

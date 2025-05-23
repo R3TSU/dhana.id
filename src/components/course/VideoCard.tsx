@@ -8,16 +8,18 @@ interface VideoCardProps {
     lessonSlug: string; // For navigation
     title: string;
     thumbnailUrl: string;
-    available: boolean;
-    availableDate?: string;
+    availabilityStatus: 'available' | 'coming_soon';
+    dayNumber: number;
+    daysSinceEnrollment: number; // For more detailed messaging if needed
   }
   
-  const VideoCard = ({ id, lessonSlug, title, thumbnailUrl, available, availableDate }: VideoCardProps) => {
+  const VideoCard = ({ id, lessonSlug, title, thumbnailUrl, availabilityStatus, dayNumber, daysSinceEnrollment }: VideoCardProps) => {
+    const isAvailable = availabilityStatus === 'available';
   
     return (
       <div className={cn(
-        "card group h-full flex flex-col",
-        !available && "opacity-75"
+        "card group h-full flex flex-col bg-white shadow-lg rounded-lg overflow-hidden",
+        !isAvailable && "opacity-80"
       )}>
         <div className="relative overflow-hidden">
           <img 
@@ -25,39 +27,48 @@ interface VideoCardProps {
             alt={title} 
             className={cn(
               "w-full h-40 object-cover transition-transform duration-300",
-              available && "group-hover:scale-105",
-              !available && "filter grayscale"
+              isAvailable && "group-hover:scale-105",
+              !isAvailable && "filter grayscale"
             )}
           />
-          {available ? (
-            <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="w-12 h-12 bg-coral rounded-full flex items-center justify-center">
-                <Play size={20} className="text-white ml-1" />
+          {isAvailable ? (
+            <Link href={`/lesson/${lessonSlug}`} className="absolute inset-0">
+              <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="w-12 h-12 bg-coral rounded-full flex items-center justify-center">
+                  <Play size={20} className="text-white ml-1" />
+                </div>
               </div>
-            </div>
+            </Link>
           ) : (
-            <div className="absolute inset-0 bg-charcoal/50 flex flex-col items-center justify-center">
-              <div className="bg-violet-500/90 px-4 py-2 rounded-md">
-                <p className="text-white font-medium">Available {availableDate}</p>
+            // Coming Soon state (availabilityStatus === 'coming_soon')
+            <div className="absolute inset-0 bg-slate-700/70 flex flex-col items-center justify-center p-4 text-center">
+              <div className="bg-slate-800/90 px-4 py-3 rounded-md shadow-xl">
+                <p className="text-white font-semibold text-sm">Unlocks on Day {dayNumber}</p>
+                {/* Optional: More detailed message like 'Available in X days' can be calculated using daysSinceEnrollment and dayNumber */}
               </div>
             </div>
           )}
         </div>
         
         <div className="p-4 flex flex-col flex-grow">
-          <h3 className="text-lg font-medium mb-3 text-indigo group-hover:text-coral transition-colors">{title}</h3>
+          <h3 className={cn(
+            "text-lg font-medium mb-3 text-indigo transition-colors",
+            isAvailable && "group-hover:text-coral"
+            )}>{title}</h3>
           
-          {available ? (
+          {isAvailable ? (
             <Link href={`/lesson/${lessonSlug}`}>
             <Button 
-              className="bg-lavender hover:bg-violet-500 w-full cursor-pointer text-white transition-colors mt-auto"
+              className="bg-lavender hover:bg-violet-500 w-full text-white transition-colors mt-auto"
+              // Link wrapper handles navigation
             >
               Watch Now <Play size={16} className="ml-2" />
             </Button>
             </Link>
           ) : (
+            // Coming Soon state
             <Button 
-              className="bg-lavender text-gray-600 cursor-not-allowed w-full mt-auto"
+              className="bg-slate-300 text-slate-500 cursor-not-allowed w-full mt-auto"
               disabled
             >
               Coming Soon
