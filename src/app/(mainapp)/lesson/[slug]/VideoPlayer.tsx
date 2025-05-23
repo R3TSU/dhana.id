@@ -5,12 +5,17 @@ import '@vidstack/react/player/styles/default/layouts/video.css';
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 
-export default function VideoPlayer() {
+interface VideoPlayerProps {
+  videoUrl: string;
+  title?: string;
+}
+
+export default function VideoPlayer({ videoUrl, title = "Lesson Video" }: VideoPlayerProps) {
     return (
         <div className="aspect-w-16 aspect-h-9">
             <MediaPlayer 
-                title="Sprite Fight" 
-                src="https://www.youtube.com/watch?v=NLjnOsP_q1U"
+                title={title} 
+                src={videoUrl}
                 aspectRatio="16/9"
                 viewType="video"
                 streamType="on-demand"

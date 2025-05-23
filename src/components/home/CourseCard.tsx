@@ -1,19 +1,20 @@
 import Link from "next/link";
 
 interface CourseCardProps {
-  id: string;
+  id: string; // Keep id for React key or other non-navigation purposes
+  slug: string; // Add slug for navigation
   title: string;
   description: string;
   thumbnailUrl: string;
 }
 
-const CourseCard = ({ id, title, description, thumbnailUrl }: CourseCardProps) => {
+const CourseCard = ({ id, slug, title, description, thumbnailUrl }: CourseCardProps) => {
   return (
     <div 
       className="card group h-full flex mb-8 flex-col cursor-pointer transform transition-all duration-300 hover:scale-105"
     >
       <div className="relative w-full h-full overflow-hidden rounded-lg">
-        <Link href={`/course/${id}`}>
+        <Link href={`/course/${slug}`}>
         <img 
           src={thumbnailUrl} 
           alt={title} 

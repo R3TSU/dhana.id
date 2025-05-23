@@ -3,7 +3,7 @@
 
 import { db } from '@/db/drizzle'; // Assuming db connection is in @/db
 import { lessons, courses } from '@/db/schema';
-import { eq, asc, desc } from 'drizzle-orm';
+import { eq, asc, desc, getTableColumns } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -76,6 +76,35 @@ export async function getLessonById(id: number) {
   } catch (error) {
     console.error('Error fetching lesson by ID:', error);
     return { data: null, error: 'Failed to fetch lesson.' };
+  }
+}
+
+export async function getLessonDetailsBySlug(lessonSlug: string): Promise<{
+  data: (typeof lessons.$inferSelect & { courseSlug: string | null }) | null; // Added courseSlug
+  error: string | null;
+}> {
+  if (!lessonSlug || typeof lessonSlug !== 'string' || lessonSlug.trim() === '') {
+    return { data: null, error: 'Invalid lesson slug provided.' };
+  }
+  try {
+    const result = await db
+      .select({
+        ...getTableColumns(lessons), // Select all fields from lessons table
+        courseSlug: courses.slug, // Select slug from courses table
+      })
+      .from(lessons)
+      .leftJoin(courses, eq(lessons.course_id, courses.id)) // Join with courses table
+      .where(eq(lessons.slug, lessonSlug))
+      .limit(1);
+
+    if (result.length === 0) {
+      return { data: null, error: 'Lesson not found.' };
+    }
+    // The result[0] will have all lesson columns and the courseSlug directly
+    return { data: result[0], error: null };
+  } catch (error) {
+    console.error('Error fetching lesson by slug:', error);
+    return { data: null, error: 'Failed to fetch lesson details.' };
   }
 }
 

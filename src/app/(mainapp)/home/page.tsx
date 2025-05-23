@@ -1,58 +1,49 @@
-// Mock data for courses
 import CourseCard from "@/components/home/CourseCard";
+import { getPublicCourses, type PublicCourse } from "@/actions/admin/course.actions"; // Adjust path if action moved
 
-const COURSES_DATA = [
-  {
-    id: "1",
-    title: "Web Development Masterclass",
-    description: "Learn modern web development with HTML, CSS, JavaScript, React, and more. Build responsive websites and interactive applications.",
-    thumbnailUrl: "https://placehold.co/600x200/orange/white",
-  },
-  {
-    id: "2",
-    title: "UI/UX Design Fundamentals",
-    description: "Master the principles of user interface and user experience design. From wireframing to prototyping, learn to create beautiful designs.",
-    thumbnailUrl: "https://placehold.co/600x200/blue/white",
-  },
-  {
-    id: "3",
-    title: "Data Science Essentials",
-    description: "Explore the world of data science with Python, pandas, machine learning, and visualization techniques for data-driven insights.",
-    thumbnailUrl: "https://placehold.co/600x200/green/white",
-  },
-  {
-    id: "4",
-    title: "Digital Marketing Strategy",
-    description: "Learn effective digital marketing strategies including SEO, social media marketing, content creation, and analytics.",
-    thumbnailUrl: "https://placehold.co/600x200/purple/white",
-  },
-];
-export default function Home() {
+export default async function Home() {
+  const { data: coursesData, error } = await getPublicCourses();
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-main text-red-500 p-4 text-center">
+        <h2 className="text-2xl font-semibold mb-2">Oops! Something went wrong.</h2>
+        <p>We couldn't load the courses at the moment: {error}</p>
+        <p>Please try refreshing the page or check back later.</p>
+      </div>
+    );
+  }
+
+  if (!coursesData || coursesData.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-main p-4 text-center">
+        <h2 className="text-2xl font-semibold mb-2">No Courses Yet!</h2>
+        <p>There are currently no courses available. Please check back soon!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-main">
-      {/* <Navbar isScrolled={isScrolled} /> */}
-      
       <main className="flex-grow">
-        <div className="container mx-auto px-4">
-
-          {/* All Courses */}
+        <div className="container mx-auto px-4 py-12"> {/* Added py-12 for vertical spacing */}
+          <h1 className="text-4xl font-bold text-center text-indigo mb-10">Explore Our Courses</h1>
           <section className="">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {COURSES_DATA.map((course) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Increased gap */}
+              {coursesData.map((course: PublicCourse) => (
                 <CourseCard
                   key={course.id}
-                  id={course.id}
+                  id={course.id} // Keep id for React key
+                  slug={course.slug} // Pass slug for navigation
                   title={course.title}
-                  description={course.description}
-                  thumbnailUrl={course.thumbnailUrl}
+                  description={course.description ?? "No description available."}
+                  thumbnailUrl={course.thumbnailUrl ?? "https://placehold.co/600x200/slate/white?text=No+Image"} // Default placeholder
                 />
               ))}
             </div>
           </section>
         </div>
       </main>
-      
-      {/* <Footer /> */}
     </div>
   );
 }

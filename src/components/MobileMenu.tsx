@@ -28,7 +28,7 @@ const MobileMenu = () => {
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-navy/90 backdrop-blur-md border-t border-white/10 z-50">
+    <footer className="fixed bottom-0 left-0 right-0 z-50">
       <nav className="grid grid-cols-2 items-center">
         {menuItems.map((item) => (
           <Link
@@ -37,10 +37,10 @@ const MobileMenu = () => {
         >
             <Button
             className={cn(
-              "flex flex-col items-center justify-center px-6 py-6 w-full transition-colors cursor-pointer",
+              "flex flex-col items-center justify-center px-6 py-6 w-full cursor-pointer",
               isActive(item.path)
-                ? "text-violet-500"
-                : "text-off-white/70 hover:text-violet-500"
+                ? "text-primary"
+                : "text-off-white/70 hover:text-primary"
             )}
           >
             <item.icon size={20} />

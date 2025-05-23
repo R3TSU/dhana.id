@@ -15,8 +15,7 @@ export const users = pgTable('users', {
     id: serial('id').primaryKey(),
     clerk_user_id: text('clerk_user_id').unique().notNull(),
     email: text('email'),
-    first_name: text('first_name'),
-    last_name: text('last_name'),
+    fullName: text('full_name'), // Changed from first_name and last_name
     role: text('role').default('user'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
@@ -52,4 +51,33 @@ export const lessons = pgTable('lessons', {
     index("lessons_course_id_idx").on(table.course_id),
     index("lessons_slug_idx").on(table.slug),
     uniqueIndex("lessons_title_idx").on(table.title)
+]);
+
+export const lesson_notes = pgTable('lesson_notes', {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }), 
+    lessonId: integer('lesson_id').notNull().references(() => lessons.id, { onDelete: 'cascade' }),
+    content: text('content').default(''), // Default to empty string, can be updated
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()), // Automatically update timestamp
+}, (table) => [
+    uniqueIndex("lesson_notes_user_lesson_idx").on(table.userId, table.lessonId), // User can only have one note per lesson
+    index("lesson_notes_user_id_idx").on(table.userId),
+    index("lesson_notes_lesson_id_idx").on(table.lessonId),
+]);
+
+export const course_enrollments = pgTable('course_enrollments', {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    courseId: integer('course_id').notNull().references(() => courses.id, { onDelete: 'cascade' }),
+    enrollmentDate: timestamp('enrollment_date').defaultNow().notNull(),
+    status: text('status').default('enrolled').notNull(), // e.g., 'enrolled', 'pending', 'expired'
+    pricePaid: integer('price_paid'), // Amount in cents, null if free or not applicable
+    accessExpirationDate: timestamp('access_expiration_date'), // For time-limited access
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => [
+    uniqueIndex("course_enrollments_user_course_idx").on(table.userId, table.courseId),
+    index("course_enrollments_user_id_idx").on(table.userId),
+    index("course_enrollments_course_id_idx").on(table.courseId),
 ]);

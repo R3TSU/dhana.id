@@ -1,9 +1,10 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { config } from 'dotenv';
+// import { config } from 'dotenv';
+import * as schema from './schema'; // Import all schema objects
 
 // Load environment variables
-config({ path: '.env' });
+// config({ path: '.env' });
 
 // For multi-branch setup
 const getBranchUrl = () => {
@@ -18,5 +19,5 @@ const getBranchUrl = () => {
 
 const sql = neon(getBranchUrl()!);
 
-// Create Drizzle instance with neon-http adapter
-export const db = drizzle({ client: sql });
+// Create Drizzle instance with neon-http adapter and the schema
+export const db = drizzle(sql, { schema }); // Pass the schema here

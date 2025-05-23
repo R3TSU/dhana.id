@@ -269,6 +269,110 @@ export async function deleteCourse(id: number) {
   }
 }
 
+// Type for public-facing course data
+import { lessons } from '@/db/schema'; // Added import for lessons table
+import { and } from 'drizzle-orm'; // Added for potential future complex queries
+
+export type PublicCourse = {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnailUrl: string | null;
+  slug: string;
+};
+
+export async function getPublicCourses(): Promise<{ data: PublicCourse[]; error: string | null }> {
+  try {
+    const courseData = await db
+      .select({
+        id: courses.id,
+        title: courses.title,
+        description: courses.description,
+        thumbnailUrl: courses.thumbnail_url, // Alias to match CourseCard prop
+        slug: courses.slug,
+      })
+      .from(courses)
+      .orderBy(desc(courses.created_at)); // Show newest first
+
+    const processedData: PublicCourse[] = courseData.map(course => ({
+      ...course,
+      id: String(course.id), // Ensure id is a string
+      description: course.description ?? null,
+      thumbnailUrl: course.thumbnailUrl ?? null,
+    }));
+
+    return { data: processedData, error: null };
+  } catch (error) {
+    console.error('Error fetching public courses:', error);
+    return { data: [], error: 'Failed to fetch courses. Please try again later.' };
+  }
+}
+
+export type PublicLessonForCoursePage = {
+  id: string;
+  title: string;
+  slug: string;
+  thumbnailUrl: string | null;
+  dayNumber: number;
+  // videoUrl: string; // Not immediately needed for VideoCard, but available
+};
+
+export type CourseWithLessons = {
+  id: number;
+  title: string;
+  description: string | null;
+  slug: string;
+};
+
+export async function getCourseWithLessonsBySlug(courseSlug: string): Promise<{
+  course: CourseWithLessons | null;
+  lessons: PublicLessonForCoursePage[];
+  error: string | null;
+}> {
+  try {
+    const courseData = await db
+      .select({
+        id: courses.id,
+        title: courses.title,
+        description: courses.description,
+        slug: courses.slug,
+      })
+      .from(courses)
+      .where(eq(courses.slug, courseSlug))
+      .limit(1);
+
+    if (courseData.length === 0) {
+      return { course: null, lessons: [], error: 'Course not found.' };
+    }
+
+    const course = courseData[0];
+
+    const lessonsData = await db
+      .select({
+        id: lessons.id,
+        title: lessons.title,
+        slug: lessons.slug,
+        thumbnailUrl: lessons.thumbnail_url,
+        dayNumber: lessons.day_number,
+        // videoUrl: lessons.video_url, // Available if needed later
+      })
+      .from(lessons)
+      .where(eq(lessons.course_id, course.id))
+      .orderBy(lessons.day_number); // Order lessons by day number
+
+    const processedLessons: PublicLessonForCoursePage[] = lessonsData.map(lesson => ({
+      ...lesson,
+      id: String(lesson.id), // Ensure id is a string for keys/props
+      thumbnailUrl: lesson.thumbnailUrl ?? null,
+    }));
+
+    return { course, lessons: processedLessons, error: null };
+  } catch (error) {
+    console.error(`Error fetching course with lessons by slug (${courseSlug}):`, error);
+    return { course: null, lessons: [], error: 'Failed to fetch course details. Please try again later.' };
+  }
+}
+
 export async function getCoursesForSelection() {
   try {
     const data = await db.select({

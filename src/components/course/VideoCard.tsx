@@ -4,14 +4,15 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface VideoCardProps {
-    id: string;
+    id: string; // For React key
+    lessonSlug: string; // For navigation
     title: string;
     thumbnailUrl: string;
     available: boolean;
     availableDate?: string;
   }
   
-  const VideoCard = ({ id, title, thumbnailUrl, available, availableDate }: VideoCardProps) => {
+  const VideoCard = ({ id, lessonSlug, title, thumbnailUrl, available, availableDate }: VideoCardProps) => {
   
     return (
       <div className={cn(
@@ -47,7 +48,7 @@ interface VideoCardProps {
           <h3 className="text-lg font-medium mb-3 text-indigo group-hover:text-coral transition-colors">{title}</h3>
           
           {available ? (
-            <Link href={`/lesson/${id}`}>
+            <Link href={`/lesson/${lessonSlug}`}>
             <Button 
               className="bg-lavender hover:bg-violet-500 w-full cursor-pointer text-white transition-colors mt-auto"
             >
