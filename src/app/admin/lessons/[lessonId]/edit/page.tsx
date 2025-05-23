@@ -70,6 +70,7 @@ export default async function EditLessonPage({ params }: {
         courses={courses}
         buttonText="Update Lesson"
         pendingButtonText="Updating Lesson..."
+        courseIdForCancelLink={lesson.course_id}
       />
     </div>
   );

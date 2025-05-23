@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
 
 interface CourseCardProps {
   id: string;
@@ -18,7 +16,7 @@ const CourseCard = ({ id, title, description, thumbnailUrl }: CourseCardProps) =
         <Link href={`/course/${id}`}>
         <img 
           src={thumbnailUrl} 
-          alt="Course thumbnail" 
+          alt={title} 
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>

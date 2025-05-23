@@ -24,6 +24,7 @@ interface LessonFormProps {
   initialValues?: InitialValues; // For setting initial form values programmatically
   buttonText?: string;
   pendingButtonText?: string;
+  courseIdForCancelLink?: number; // For the cancel link destination
 }
 
 // Define proper type for form state
@@ -50,8 +51,12 @@ export function LessonForm({
   initialValues, // Note: initialValues might need to be considered for thumbnail if used
   buttonText = 'Save Lesson',
   pendingButtonText = 'Saving Lesson...',
+  courseIdForCancelLink,
 }: LessonFormProps) {
   const [state, formAction] = useActionState(action, initialState);
+  const cancelHref = courseIdForCancelLink 
+    ? `/admin/courses/${courseIdForCancelLink}/lessons` 
+    : '/admin/courses'; // Fallback to all lessons page if no specific courseId is provided
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(initialData?.thumbnail_url || null);
   const [removeThumbnailFlag, setRemoveThumbnailFlag] = useState<boolean>(false);
 
@@ -235,7 +240,7 @@ export function LessonForm({
       )}
 
       <div className="flex items-center justify-end space-x-4">
-        <Link href="/admin/lessons" className="text-gray-600 hover:text-gray-800 text-sm font-medium">
+        <Link href={cancelHref} className="text-gray-600 hover:text-gray-800 text-sm font-medium">
             Cancel
         </Link>
         <SubmitButton pendingText={pendingButtonText} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-gray-400">

@@ -72,13 +72,16 @@ export default function CourseLessonsPage() {
 
     const handleDelete = async (lessonId: number) => {
         if (window.confirm('Are you sure you want to delete this lesson?')) {
-            const result = await deleteLesson(lessonId);
-            if ('error' in result && result.error) {
-                alert(`Error deleting lesson: ${'error' in result ? result.error : 'Unknown error'}`);
-            } else {
+            const currentCourseIdNum = parseInt(courseIdParam, 10);
+            const result = await deleteLesson(lessonId, isNaN(currentCourseIdNum) ? undefined : currentCourseIdNum);
+
+            if (result.success) {
                 setLessons(prevLessons => prevLessons.filter(l => l.id !== lessonId));
-                alert('success' in result ? result.success : 'Lesson deleted.');
-                // No need to call revalidatePath here as it's handled by the server action
+                alert(result.message || 'Lesson deleted successfully.');
+                // The server action handles revalidatePath, so UI updates locally for immediate feedback.
+                // Consider router.refresh() if there are other derived states on the page that need updating.
+            } else {
+                alert(`Error: ${result.message || 'Failed to delete lesson.'}`);
             }
         }
     };
