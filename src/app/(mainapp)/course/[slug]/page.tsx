@@ -128,7 +128,6 @@ export default async function CoursePage({
           </div>
         </div>
       </main>
-      
     </div>
   );
 }
