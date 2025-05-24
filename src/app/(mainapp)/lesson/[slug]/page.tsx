@@ -10,12 +10,12 @@ import { Metadata } from "next"; // For dynamic metadata
 
 // Define props for the page
 interface LessonPageProps {
-  params: { slug: string }; // Corrected type as per Next.js 15+ for awaited params
+  params: Promise<{ slug: string }>;
 }
 
 // Dynamic metadata for SEO
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
-  const { slug } = params; // params is already resolved here
+  const { slug } = await params; // params is already resolved here
   const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
 
   if (error || !lessonData) {
@@ -45,8 +45,8 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 }
 
 
-export default async function LessonPage({ params }: LessonPageProps) {
-  const { slug } = params; // params is already resolved here
+export default async function LessonPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await paramsPromise; // Await the promise to get slug
   const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
 
   // Middleware should handle authentication. This page assumes user is authenticated.

@@ -3,13 +3,15 @@ import { Metadata } from 'next';
 import { getLessonDetailsBySlug } from '@/actions/admin/lesson.actions'; // Assuming this can fetch basic details
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Eye, Lock } from 'lucide-react';
+import { GetStarted } from '@/components/GetStarted';
+import { LessonPreviewRedirector } from '@/components/LessonPreviewRedirector';
 
 interface LessonPreviewPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: LessonPreviewPageProps): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   // Fetch minimal data for metadata, or adjust getLessonDetailsBySlug if it's too heavy
   const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
 
@@ -41,8 +43,8 @@ export async function generateMetadata({ params }: LessonPreviewPageProps): Prom
   };
 }
 
-export default async function LessonPreviewPage({ params }: LessonPreviewPageProps) {
-  const { slug } = params;
+export default async function LessonPreviewPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await paramsPromise; // Await the promise to get slug
   const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
 
   if (error || !lessonData) {
@@ -69,7 +71,9 @@ export default async function LessonPreviewPage({ params }: LessonPreviewPagePro
   const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(fullLessonUrl)}`;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <LessonPreviewRedirector lessonSlug={slug} />
+      <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
         {lessonData.thumbnail_url && (
           <img 
@@ -83,7 +87,6 @@ export default async function LessonPreviewPage({ params }: LessonPreviewPagePro
           <p className="text-gray-600 mb-2 text-xl">{lessonData.courseTitle || 'N/A'}</p>
           
           <div className="prose prose-lg max-w-none text-gray-700 mb-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">What you'll learn (preview)</h2>
             {/* Display a short description or key points as a teaser */}
             <p>{lessonData.description ? lessonData.description.substring(0, 300) + '...' : 'No preview description available.'}</p>
             {/* You could also list a few bullet points from the lesson if available */}
@@ -96,32 +99,24 @@ export default async function LessonPreviewPage({ params }: LessonPreviewPagePro
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-700">
-                  This is just a preview. Sign up or log in to access the full lesson content, videos, and materials.
+                  Sign up or log in to access the full videos.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href={signUpUrl} className="flex-1">
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
-                Sign Up to Unlock Full Lesson
-              </Button>
-            </Link>
-            <Link href={signInUrl} className="flex-1">
-              <Button variant="outline" className="w-full">
-                Already a Member? Log In
-              </Button>
-            </Link>
+            <GetStarted />
           </div>
           
           <div className="mt-6 text-center">
-            <Link href={`/course/${(lessonData as any).course_slug || '#'}`} className="text-sm text-indigo-600 hover:text-indigo-500">
-              &larr; Back to Course Overview
+            <Link href="/" className="text-sm text-indigo-600 hover:text-indigo-500">
+              Go to Home
             </Link>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
