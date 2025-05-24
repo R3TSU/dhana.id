@@ -10,15 +10,15 @@ import { Metadata } from "next"; // For dynamic metadata
 
 // Define props for the page
 interface LessonPageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string }; // Corrected type as per Next.js 15+ for awaited params
 }
 
 // Dynamic metadata for SEO
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const { data: lessonData } = await getLessonDetailsBySlug(slug);
+  const { slug } = params; // params is already resolved here
+  const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
 
-  if (!lessonData) {
+  if (error || !lessonData) {
     return {
       title: "Lesson Not Found",
       description: "The lesson you are looking for could not be found.",
@@ -46,8 +46,11 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 
 
 export default async function LessonPage({ params }: LessonPageProps) {
-  const { slug } = await params;
+  const { slug } = params; // params is already resolved here
   const { data: lessonData, error } = await getLessonDetailsBySlug(slug);
+
+  // Middleware should handle authentication. This page assumes user is authenticated.
+  // Caching for this page (private) will be handled by vercel.json or middleware.
 
   if (error || !lessonData) {
     return (

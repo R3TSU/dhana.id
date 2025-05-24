@@ -7,18 +7,8 @@ import { eq, asc, desc, getTableColumns } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { generateSlug } from '@/lib/utils';
 import { uploadFileToR2, deleteFileFromR2 } from '@/lib/r2'; // Added R2 imports
-
-// Helper function to generate slugs
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w-]+/g, '') // Remove all non-word chars
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-}
 
 // Zod schema for form validation (input from user, slug is generated)
 const lessonFormSchema = z.object({
@@ -80,7 +70,7 @@ export async function getLessonById(id: number) {
 }
 
 export async function getLessonDetailsBySlug(lessonSlug: string): Promise<{
-  data: (typeof lessons.$inferSelect & { courseSlug: string | null }) | null; // Added courseSlug
+  data: (typeof lessons.$inferSelect & { courseSlug: string | null, courseTitle: string | null }) | null; // Added courseSlug and courseTitle
   error: string | null;
 }> {
   if (!lessonSlug || typeof lessonSlug !== 'string' || lessonSlug.trim() === '') {
@@ -90,7 +80,8 @@ export async function getLessonDetailsBySlug(lessonSlug: string): Promise<{
     const result = await db
       .select({
         ...getTableColumns(lessons), // Select all fields from lessons table
-        courseSlug: courses.slug, // Select slug from courses table
+        courseSlug: courses.slug,    // Select slug from courses table
+        courseTitle: courses.title   // Select title from courses table
       })
       .from(lessons)
       .leftJoin(courses, eq(lessons.course_id, courses.id)) // Join with courses table

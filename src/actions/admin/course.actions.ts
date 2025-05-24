@@ -8,16 +8,7 @@ import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-
-// Helper function to generate a slug
-const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with a single one
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-};
+import { generateSlug } from '@/lib/utils';
 
 // Zod schema for validating incoming form data (slug is auto-generated)
 const courseFormSchema = z.object({
