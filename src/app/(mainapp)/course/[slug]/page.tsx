@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import VideoCard from "@/components/course/VideoCard";
 import { getCourseWithLessonsBySlug, type CourseWithLessons, type PublicLessonForCoursePage } from "@/actions/admin/course.actions"; // Adjust path if needed
-import { enrollInCourse, getUserEnrollmentForCourse } from "@/actions/enrollment.actions"; // Import new actions
+import { enrollInCourse, getUserEnrollmentForCourse, hasLessonAccessOverride } from "@/actions/enrollment.actions"; // Import new actions
 
 export default async function CoursePage({
   params,
@@ -61,24 +61,40 @@ export default async function CoursePage({
     }
   }
 
-  const processedLessons = lessonsData
-    .map(lesson => {
+  const processedLessonsPromises = lessonsData
+    .map(async (lesson) => {
       let availabilityStatus: 'available' | 'coming_soon' | 'hidden' = 'hidden';
       const dayNumber = lesson.dayNumber || 1; // Default to 1 if not set
 
       if (daysSinceEnrollment >= dayNumber) {
         availabilityStatus = 'available';
-      } else if (dayNumber - daysSinceEnrollment === 1) {
-        availabilityStatus = 'coming_soon';
+      } else {
+        // Not available by drip, check for override
+        const lessonIdAsNumber = parseInt(lesson.id, 10);
+        if (!isNaN(lessonIdAsNumber)) {
+          const hasOverride = await hasLessonAccessOverride(lessonIdAsNumber);
+          if (hasOverride) {
+            availabilityStatus = 'available';
+          }
+        } else {
+          console.warn(`Invalid lesson ID encountered during override check: ${lesson.id}`);
+        }
+
+        // If still not 'available' (neither by drip nor override), check for 'coming_soon'
+        if (availabilityStatus !== 'available' && (dayNumber - daysSinceEnrollment === 1)) {
+          availabilityStatus = 'coming_soon';
+        }
+        // If none of the above, it remains 'hidden' by default
       }
-      // else it remains 'hidden'
 
       return {
         ...lesson,
         availabilityStatus,
         dayNumber, // ensure dayNumber is passed
       };
-    })
+    });
+
+  const processedLessonsWithOverrides = (await Promise.all(processedLessonsPromises))
     .filter(lesson => lesson.availabilityStatus !== 'hidden');
 
   return (
@@ -107,9 +123,9 @@ export default async function CoursePage({
           <div className="mb-16">
             <h2 className="text-2xl font-semibold text-indigo mb-6">Lessons</h2>
             {enrollmentError && <p className='text-sm text-red-500 mb-4'>{enrollmentError}</p>}
-            {processedLessons && processedLessons.length > 0 ? (
+            {processedLessonsWithOverrides && processedLessonsWithOverrides.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {processedLessons.map((lesson) => (
+                {processedLessonsWithOverrides.map((lesson) => (
                   <VideoCard
                     key={lesson.id}
                     id={String(lesson.id)} // Ensure id is string for VideoCard prop

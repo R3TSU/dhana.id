@@ -6,6 +6,7 @@ import Notes from "@/components/lesson/notes"; // Assuming this path is correct 
 import ShareButton from "@/components/lesson/ShareButton"; // Assuming this path is correct
 import VideoPlayer from "./VideoPlayer"; // Will now be in the same [slug] directory
 import { getLessonDetailsBySlug } from "@/actions/admin/lesson.actions"; // Import new action
+import { hasLessonAccessOverride, getUserEnrollmentForCourse } from "@/actions/enrollment.actions";
 import { Metadata } from "next"; // For dynamic metadata
 
 // Define props for the page
@@ -52,13 +53,47 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
   // Middleware should handle authentication. This page assumes user is authenticated.
   // Caching for this page (private) will be handled by vercel.json or middleware.
 
-  if (error || !lessonData) {
+  let canViewLesson = false;
+  if (lessonData) {
+    const lessonId = lessonData.id;
+    const courseId = lessonData.course_id;
+    const dayNumber = lessonData.day_number || 1;
+
+    if (courseId) {
+      const { enrollmentDate, error: enrollmentError } = await getUserEnrollmentForCourse(courseId);
+      let daysSinceEnrollment = 0;
+      if (enrollmentDate && !enrollmentError) {
+        const today = new Date();
+        const enrollDate = new Date(enrollmentDate);
+        today.setHours(0, 0, 0, 0);
+        enrollDate.setHours(0, 0, 0, 0);
+        const diffTime = Math.abs(today.getTime() - enrollDate.getTime());
+        daysSinceEnrollment = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Day of enrollment is Day 1
+      } else {
+        // If error fetching enrollment, or no date, assume not enrolled for drip purposes
+        // Override can still grant access.
+        if (enrollmentError) {
+          console.warn(`Error fetching enrollment for course ${courseId} on lesson page ${slug}: ${enrollmentError}`);
+        }
+      }
+      const isAvailableByDrip = daysSinceEnrollment >= dayNumber;
+      const hasOverride = await hasLessonAccessOverride(lessonId);
+      canViewLesson = isAvailableByDrip || hasOverride;
+    } else {
+      // If lesson somehow has no course_id, only override can grant access
+      console.warn(`Lesson ${slug} (ID: ${lessonId}) has no course_id. Checking for override only.`);
+      const hasOverride = await hasLessonAccessOverride(lessonId);
+      canViewLesson = hasOverride;
+    }
+  }
+
+  if (error || !lessonData || !canViewLesson) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-main text-white p-4">
         <AlertTriangle size={48} className="text-yellow-400 mb-4" />
-        <h1 className="text-2xl font-semibold mb-2">Lesson Not Found</h1>
+        <h1 className="text-2xl font-semibold mb-2">{(error || !lessonData) ? 'Lesson Not Found' : 'Access Denied'}</h1>
         <p className="text-center mb-6">
-          {error || "We couldn't find the lesson you're looking for."}
+          {error || (!lessonData ? "We couldn't find the lesson you're looking for." : "You do not have access to this lesson yet, or it's not available.")}
         </p>
         <Link href="/home">
           <Button className="bg-coral hover:bg-coral-dark text-white">

@@ -1,6 +1,9 @@
 import { getCurrentInternalUser } from '@/actions/user.actions';
 import EditProfileForm from '@/components/profile/EditProfileForm';
 import { redirect } from 'next/navigation';
+import { SignOutButton } from '@clerk/nextjs'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default async function ProfilePage() {
   const internalUser = await getCurrentInternalUser();
@@ -22,6 +25,14 @@ export default async function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <EditProfileForm user={userData} />
+
+      <div className="w-full max-w-lg mx-auto mt-8 mb-12">
+      <SignOutButton>
+        <Button className='w-full cursor-pointer'>
+          Sign Out
+        </Button>
+      </SignOutButton>
+      </div>
     </div>
   );
 }

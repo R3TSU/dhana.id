@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useActionState } from 'react';
+import { useEffect, useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { completeUserProfile } from '@/actions/user.actions';
 import { Button } from '@/components/ui/button';
@@ -26,13 +26,26 @@ function SubmitButton() {
 }
 
 export default function CompleteProfileForm({ initialEmail }: { initialEmail?: string }) {
+  const [fromLessonSlugForForm, setFromLessonSlugForForm] = useState('');
   const [state, formAction] = useActionState(completeUserProfile, initialState);
 
   useEffect(() => {
+    // Get lesson slug from session storage on mount
+    const slug = sessionStorage.getItem('fromLessonSlug');
+    if (slug) {
+      setFromLessonSlugForForm(slug);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
     if (state.success) {
-      // The server action handles redirection, but you could toast a success message here
-      // if the redirect was handled differently (e.g., client-side redirect after success)
-      // toast.success('Profile updated successfully!');
+      // The server action handles redirection.
+      // Clear the session storage item on successful profile completion.
+      if (sessionStorage.getItem('fromLessonSlug')) {
+        sessionStorage.removeItem('fromLessonSlug');
+        setFromLessonSlugForForm(''); // Clear state as well
+      }
+      // toast.success('Profile completed successfully!'); // Optional: if redirect allows toast to show
     }
     if (state.error) {
       toast.error(state.error, { description: state.fieldErrors?.fullName?.join(', ') });
@@ -68,6 +81,8 @@ export default function CompleteProfileForm({ initialEmail }: { initialEmail?: s
           </p>
         )}
       </div>
+
+      <input type="hidden" name="fromLessonSlug" value={fromLessonSlugForForm} />
       
       <SubmitButton />
 

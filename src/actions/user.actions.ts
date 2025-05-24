@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { grantLessonAccessOnSignup } from "./enrollment.actions";
 
 // Helper to get internal user by Clerk ID, can be used by other actions too
 export async function getInternalUserByClerkId(clerkId: string) {
@@ -34,6 +35,7 @@ export async function getCurrentInternalUser() {
 
 const completeProfileFormSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  fromLessonSlug: z.string().optional(), // Added fromLessonSlug for initial signup context
   // Add other fields here if needed in the future, e.g., username
 });
 
@@ -57,6 +59,7 @@ export async function completeUserProfile(
 
   const rawFormData = {
     fullName: formData.get("fullName") as string,
+    fromLessonSlug: formData.get("fromLessonSlug") as string | null, // Capture fromLessonSlug
   };
 
   const validation = completeProfileFormSchema.safeParse(rawFormData);
@@ -69,7 +72,7 @@ export async function completeUserProfile(
     };
   }
 
-  const { fullName } = validation.data;
+  const { fullName, fromLessonSlug } = validation.data; // Destructure fromLessonSlug
 
   try {
     const existingUser = await getInternalUserByClerkId(clerkUserId);
@@ -101,6 +104,31 @@ export async function completeUserProfile(
 
     revalidatePath("/profile"); // Revalidate profile page if you have one
     revalidatePath("/home"); // Revalidate home or other relevant pages
+
+    // Grant lesson access if fromLessonSlug is present
+    if (fromLessonSlug) {
+      const userForLessonGrant = existingUser || await getInternalUserByClerkId(clerkUserId);
+      if (userForLessonGrant) {
+        try {
+          console.log(`Attempting to grant lesson access for slug: ${fromLessonSlug}, user ID: ${userForLessonGrant.id} during profile completion.`);
+          const grantAccessResult = await grantLessonAccessOnSignup(fromLessonSlug, userForLessonGrant.id);
+          if (grantAccessResult.success) {
+            console.log(`Successfully granted lesson access for slug: ${fromLessonSlug}, user ID: ${userForLessonGrant.id}. Message: ${grantAccessResult.message || ''}`);
+            // The client-side form should clear sessionStorage for 'fromLessonSlug' upon success.
+            // If redirecting to the lesson, it would be: redirect(`/lesson/${fromLessonSlug}`);
+            // For now, keeping redirect to /home as per original structure.
+          } else {
+            console.error(`Failed to grant lesson access for slug: ${fromLessonSlug}, user ID: ${userForLessonGrant.id}. Error: ${grantAccessResult.error}`);
+            // Log error but don't fail the profile completion for this secondary action.
+          }
+        } catch (grantError) {
+          console.error(`Exception during grantLessonAccessOnSignup for slug: ${fromLessonSlug}, user ID: ${userForLessonGrant.id}:`, grantError);
+        }
+      } else {
+        console.error(`Could not find/create internal user (ID: ${clerkUserId}) to grant lesson access for slug: ${fromLessonSlug}.`);
+      }
+    }
+
   } catch (error) {
     console.error("Error completing user profile:", error);
     // Check for unique constraint violation on email (if another user already took it, though Clerk should prevent this at its level)
@@ -121,6 +149,7 @@ export async function completeUserProfile(
 // Schema for updating profile (only fullName for now)
 const updateUserProfileSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  // fromLessonSlug is removed from general profile updates
 });
 
 export async function updateUserProfile(
@@ -138,6 +167,7 @@ export async function updateUserProfile(
 
   const rawFormData = {
     fullName: formData.get("fullName") as string,
+    // fromLessonSlug is removed
   };
 
   const validation = updateUserProfileSchema.safeParse(rawFormData);
@@ -146,11 +176,11 @@ export async function updateUserProfile(
     return {
       success: false,
       message: "Invalid input.",
-      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName", string[]>>,
+      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "fromLessonSlug", string[]>>,
     };
   }
 
-  const { fullName } = validation.data;
+  const { fullName } = validation.data; // fromLessonSlug removed
 
   try {
     const internalUser = await getInternalUserByClerkId(clerkUserId);
@@ -167,6 +197,9 @@ export async function updateUserProfile(
       .where(eq(users.id, internalUser.id));
 
     revalidatePath("/profile");
+
+    // fromLessonSlug logic removed from here
+
     return { success: true, message: "Profile updated successfully!" };
 
   } catch (error) {

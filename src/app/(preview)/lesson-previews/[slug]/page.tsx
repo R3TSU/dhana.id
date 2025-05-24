@@ -106,7 +106,7 @@ export default async function LessonPreviewPage({ params: paramsPromise }: { par
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <GetStarted />
+            <GetStarted lessonSlug={slug} />
           </div>
           
           <div className="mt-6 text-center">

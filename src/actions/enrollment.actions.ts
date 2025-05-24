@@ -1,7 +1,8 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { course_enrollments, courses, users } from "@/db/schema"; // Added users import
+import { course_enrollments, courses, users, lessons, userLessonAccessOverrides } from "@/db/schema"; 
+import { getLessonDetailsBySlug } from "./admin/lesson.actions";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -66,21 +67,25 @@ export async function checkEnrollment(courseId: number): Promise<{
  * Enrolls the current user in a course if they aren't already.
  * For now, all enrollments are free.
  */
-export async function enrollInCourse(courseId: number): Promise<{ 
+export async function enrollInCourse(courseId: number, providedInternalUserId?: number): Promise<{ 
   enrollment: CourseEnrollment | null; 
   error: string | null; 
   success: boolean;
   message?: string; 
 }> {
-  const { userId } = await auth();
+  let internalUserIdToUse: number | null;
 
-  if (!userId) {
-    return { enrollment: null, error: "User not authenticated.", success: false };
+  if (providedInternalUserId) {
+    internalUserIdToUse = providedInternalUserId;
+  } else {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
+      return { enrollment: null, error: "User not authenticated.", success: false };
+    }
+    internalUserIdToUse = await getInternalUserIdFromClerkId(clerkUserId);
   }
 
-  const internalUserId = await getInternalUserIdFromClerkId(userId);
-
-  if (!internalUserId) {
+  if (!internalUserIdToUse) {
     return { enrollment: null, error: "User record not found.", success: false };
   }
 
@@ -97,7 +102,7 @@ export async function enrollInCourse(courseId: number): Promise<{
     const existingEnrollment = await db.query.course_enrollments.findFirst({
       where: and(
         eq(course_enrollments.courseId, courseId),
-        eq(course_enrollments.userId, internalUserId) // Use internal integer userId
+        eq(course_enrollments.userId, internalUserIdToUse) // Use internal integer userId
       ),
     });
 
@@ -113,7 +118,7 @@ export async function enrollInCourse(courseId: number): Promise<{
     const newEnrollmentResult = await db
       .insert(course_enrollments)
       .values({
-        userId: internalUserId, // Use internal integer userId
+        userId: internalUserIdToUse, // Use internal integer userId
         courseId: courseId,
         enrollmentDate: new Date(),
         status: 'enrolled',
@@ -179,5 +184,107 @@ export async function getUserEnrollmentForCourse(courseId: number): Promise<{
   } catch (err) {
     console.error("Error fetching user enrollment for course:", err);
     return { enrollmentDate: null, error: "Failed to fetch enrollment details." };
+  }
+}
+
+/**
+ * Grants special access to a lesson for a user, typically after signing up from a lesson preview.
+ * This involves enrolling them in the course (if not already) and adding an override record.
+ */
+export async function grantLessonAccessOnSignup(lessonSlug: string, internalUserId: number): Promise<{
+  success: boolean;
+  error: string | null;
+  message?: string;
+}> {
+  if (!lessonSlug) {
+    return { success: false, error: "Lesson slug is required." };
+  }
+  if (!internalUserId) {
+    return { success: false, error: "User ID is required." };
+  }
+
+  try {
+    // 1. Get lesson details to find courseId and lessonId
+    const lessonDetailsResult = await getLessonDetailsBySlug(lessonSlug);
+    if (lessonDetailsResult.error || !lessonDetailsResult.data) {
+      return { success: false, error: lessonDetailsResult.error || "Lesson not found." };
+    }
+    const { id: lessonId, course_id: courseId } = lessonDetailsResult.data;
+
+    if (!courseId) {
+      return { success: false, error: "Course ID not found for this lesson." };
+    }
+
+    // 2. Ensure user is enrolled in the course
+    const enrollmentResult = await enrollInCourse(courseId, internalUserId);
+    if (!enrollmentResult.success) {
+      return { success: false, error: enrollmentResult.error || "Failed to enroll in course." };
+    }
+
+    // 3. Check if an override already exists
+    const existingOverride = await db.query.userLessonAccessOverrides.findFirst({
+      where: and(
+        eq(userLessonAccessOverrides.userId, internalUserId),
+        eq(userLessonAccessOverrides.lessonId, lessonId)
+      ),
+    });
+
+    if (existingOverride) {
+      return { success: true, message: "Lesson access override already exists.", error: null };
+    }
+
+    // 4. Insert the lesson access override
+    await db.insert(userLessonAccessOverrides).values({
+      userId: internalUserId,
+      lessonId: lessonId,
+      courseId: courseId, // Storing courseId for potential denormalization/query convenience
+    });
+
+    // Optionally revalidate paths if needed for immediate UI updates elsewhere
+    // revalidatePath(`/lesson/${lessonSlug}`);
+    // revalidatePath(`/course/${lessonDetailsResult.data.courseSlug}`);
+
+    return { success: true, message: "Lesson access granted successfully.", error: null };
+
+  } catch (err) {
+    console.error("Error granting lesson access on signup:", err);
+    return { success: false, error: "An unexpected error occurred while granting lesson access." };
+  }
+}
+
+/**
+ * Checks if the current user has an explicit access override for a specific lesson.
+ */
+export async function hasLessonAccessOverride(lessonId: number): Promise<boolean> {
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) {
+    // Not authenticated, so no override possible
+    return false;
+  }
+
+  const internalUserId = await getInternalUserIdFromClerkId(clerkUserId);
+  if (!internalUserId) {
+    // No internal user record, so no override possible
+    return false;
+  }
+
+  if (!lessonId || typeof lessonId !== 'number') {
+    // Invalid lessonId passed
+    console.warn(`hasLessonAccessOverride called with invalid lessonId: ${lessonId}`);
+    return false;
+  }
+
+  try {
+    const override = await db.query.userLessonAccessOverrides.findFirst({
+      where: and(
+        eq(userLessonAccessOverrides.userId, internalUserId),
+        eq(userLessonAccessOverrides.lessonId, lessonId)
+      ),
+      columns: { id: true }, // Only need to check for existence
+    });
+    return !!override;
+  } catch (error) {
+    console.error(`Error checking lesson access override for lessonId ${lessonId}, userId ${internalUserId}:`, error);
+    return false; // Fail safe: if error, assume no override
   }
 }

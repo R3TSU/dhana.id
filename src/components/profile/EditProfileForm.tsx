@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useActionState } from 'react'; // Changed from react-dom
 import { useFormStatus } from 'react-dom';
 import { updateUserProfile } from '@/actions/user.actions';
@@ -35,12 +35,16 @@ function SubmitButton() {
 }
 
 export default function EditProfileForm({ user }: EditProfileFormProps) {
+  // fromLessonSlugForForm state removed
   const [state, formAction] = useActionState(updateUserProfile, initialState);
+
+  // useEffect for setting fromLessonSlugForForm from sessionStorage removed
 
   useEffect(() => {
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
+        // Logic for clearing fromLessonSlug from sessionStorage removed
       } else {
         toast.error(state.message, { 
           description: state.fieldErrors?.fullName?.join(', ')
@@ -83,6 +87,7 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               </p>
             )}
           </div>
+          {/* Hidden input for fromLessonSlug removed */}
         </CardContent>
         <CardFooter className="border-t pt-6 flex flex-col sm:flex-row sm:justify-end sm:space-x-2">
           <SubmitButton />

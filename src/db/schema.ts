@@ -1,4 +1,5 @@
 import { pgTable, serial, text, integer, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 // CREATE TABLE users (
 //     id SERIAL PRIMARY KEY,
@@ -81,3 +82,26 @@ export const course_enrollments = pgTable('course_enrollments', {
     index("course_enrollments_user_id_idx").on(table.userId),
     index("course_enrollments_course_id_idx").on(table.courseId),
 ]);
+
+export const userLessonAccessOverrides = pgTable('user_lesson_access_overrides', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  lessonId: integer('lesson_id').notNull().references(() => lessons.id, { onDelete: 'cascade' }),
+  courseId: integer('course_id').notNull().references(() => courses.id, { onDelete: 'cascade' }),
+  overrideGrantedAt: timestamp('override_granted_at').defaultNow().notNull(),
+});
+
+export const userLessonAccessOverridesRelations = relations(userLessonAccessOverrides, ({ one }) => ({
+  user: one(users, {
+    fields: [userLessonAccessOverrides.userId],
+    references: [users.id],
+  }),
+  lesson: one(lessons, {
+    fields: [userLessonAccessOverrides.lessonId],
+    references: [lessons.id],
+  }),
+  course: one(courses, {
+    fields: [userLessonAccessOverrides.courseId],
+    references: [courses.id],
+  }),
+}));
