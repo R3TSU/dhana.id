@@ -39,7 +39,7 @@ export async function getAllLessons(courseId?: number) {
         day_number: lessons.day_number,
         createdAt: lessons.created_at, // Corrected: schema uses created_at
         updatedAt: lessons.updated_at // Corrected: schema uses updated_at
-    }).from(lessons).leftJoin(courses, eq(lessons.course_id, courses.id)).orderBy(desc(lessons.created_at));
+    }).from(lessons).leftJoin(courses, eq(lessons.course_id, courses.id)).orderBy(desc(lessons.day_number));
 
     if (courseId && !isNaN(courseId) && courseId > 0) {
       const data = await query.where(eq(lessons.course_id, courseId)); // Corrected: schema uses course_id
