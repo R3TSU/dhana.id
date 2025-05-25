@@ -23,6 +23,10 @@ const data = {
             title: "Courses",
             url: "/admin/courses",
           },
+          {
+            title: "Enrollments",
+            url: "/admin/enrollments",
+          },
         ],
       },
     ],
