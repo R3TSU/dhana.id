@@ -136,7 +136,7 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
                 
                 {/* Share Buttons */}
                 {/* Assuming ShareButton can take slug or id. If it needs numeric ID, use lessonData.id */}
-                <ShareButton lessonId={lessonData.slug} /> 
+                <ShareButton lessonSlug={lessonData.slug} lessonTitle={lessonData.title} /> 
               </div>
             </div>
             

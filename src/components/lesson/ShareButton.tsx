@@ -11,20 +11,20 @@ import { FacebookShare, WhatsappShare } from 'react-share-lite';
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function ShareButton({ lessonId, lessonTitle }: { lessonId: string, lessonTitle?: string }) {
-    const [currentUrl, setCurrentUrl] = useState('');
+export default function ShareButton({ lessonSlug, lessonTitle }: { lessonSlug: string, lessonTitle?: string }) {
+    const [shareUrl, setShareUrl] = useState('');
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-      if (typeof window !== 'undefined') {
-        setCurrentUrl(window.location.href);
+      if (typeof window !== 'undefined' && lessonSlug) {
+        setShareUrl(`${window.location.origin}/lesson-previews/${lessonSlug}`);
       }
-    }, []);
+    }, [lessonSlug]);
 
     const handleCopyLink = async () => {
-      if (!currentUrl) return;
+      if (!shareUrl) return;
       try {
-        await navigator.clipboard.writeText(currentUrl);
+        await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         toast.success("Link copied to clipboard!");
         setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
@@ -49,12 +49,12 @@ export default function ShareButton({ lessonId, lessonTitle }: { lessonId: strin
               {copied ? <Check size={16} className="mr-2 text-green-500" /> : <LinkIcon size={16} className="mr-2" />}
               {copied ? 'Copied!' : 'Copy Link'}
             </Button>
-            <FacebookShare url={currentUrl} quote={shareQuote} size={32} className="mr-2">
+            <FacebookShare url={shareUrl} quote={shareQuote} size={32} className="mr-2">
               {/* This child is necessary for react-share-lite to render the button correctly */}
               {/* We style it to look like our other buttons */} 
                 Facebook
             </FacebookShare>
-            <WhatsappShare url={currentUrl} title={shareQuote} size={32} separator=":: ">
+            <WhatsappShare url={shareUrl} title={shareQuote} size={32} separator=":: ">
               WhatsApp
             </WhatsappShare>
           </div>
