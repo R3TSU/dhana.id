@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "pnpm drizzle-kit generate", 
+    "db:migrate": "pnpm drizzle-kit migrate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.816.0",

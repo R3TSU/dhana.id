@@ -17,7 +17,11 @@ export const users = pgTable('users', {
     clerk_user_id: text('clerk_user_id').unique().notNull(),
     email: text('email'),
     fullName: text('full_name'), // Changed from first_name and last_name
-    whatsappNumber: text('whatsapp_number'), // New field for WhatsApp number
+    whatsappNumber: text("whatsapp_number"), // Added for WhatsApp number
+    address: text("address"), // For city or district
+    birthDay: integer("birth_day"), // Day of birth (1-31)
+    birthMonth: integer("birth_month"), // Month of birth (1-12)
+    birthYear: integer("birth_year"), // Year of birth (optional)
     role: text('role').default('user'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),

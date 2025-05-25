@@ -20,7 +20,11 @@ export default async function ProfilePage() {
   const userData = {
     email: internalUser.email || null,
     fullName: internalUser.fullName || null,
-    whatsappNumber: internalUser.whatsappNumber || null, // Added whatsappNumber
+    whatsappNumber: internalUser.whatsappNumber || null,
+    address: internalUser.address || null,
+    birthDay: internalUser.birthDay || null,
+    birthMonth: internalUser.birthMonth || null,
+    birthYear: internalUser.birthYear || null,
   };
 
   return (

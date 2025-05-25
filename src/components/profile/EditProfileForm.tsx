@@ -15,13 +15,17 @@ interface EditProfileFormProps {
     email: string | null;
     fullName: string | null;
     whatsappNumber: string | null;
+    address?: string | null;
+    birthDay?: number | null;
+    birthMonth?: number | null;
+    birthYear?: number | null;
   };
 }
 
 const initialState: {
   success: boolean;
   message?: string;
-  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber" | "address" | "birthDay" | "birthMonth" | "birthYear", string[]>>;
 } = {
   success: false,
 };
@@ -36,20 +40,20 @@ function SubmitButton() {
 }
 
 export default function EditProfileForm({ user }: EditProfileFormProps) {
-  // fromLessonSlugForForm state removed
   const [state, formAction] = useActionState(updateUserProfile, initialState);
-
-  // useEffect for setting fromLessonSlugForForm from sessionStorage removed
 
   useEffect(() => {
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
-        // Logic for clearing fromLessonSlug from sessionStorage removed
       } else {
         const description = [
           state.fieldErrors?.fullName?.join(', '),
-          state.fieldErrors?.whatsappNumber?.join(', ')
+          state.fieldErrors?.whatsappNumber?.join(', '),
+          state.fieldErrors?.address?.join(', '),
+          state.fieldErrors?.birthDay?.join(', '),
+          state.fieldErrors?.birthMonth?.join(', '),
+          state.fieldErrors?.birthYear?.join(', ')
         ].filter(Boolean).join('; ');
         toast.error(state.message, { 
           description: description || undefined
@@ -72,13 +76,13 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               id="email"
               name="email"
               type="email"
-              defaultValue={user.email || ''} // Use defaultValue for initial render with server data
+              defaultValue={user.email || ''}
               readOnly
               className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="fullName">Full Name (*)</Label>
             <Input
               id="fullName"
               name="fullName"
@@ -108,6 +112,57 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               </p>
             )}
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address">Address (City/District) (*)</Label>
+            <Input
+              id="address"
+              name="address"
+              type="text"
+              defaultValue={user.address || ''}
+              placeholder="e.g., Jakarta"
+              required
+            />
+            {state.fieldErrors?.address && (
+              <p className="mt-1 text-xs text-red-500">
+                {state.fieldErrors.address.join(', ')}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Date of Birth</Label>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="birthDay" className="text-xs">Day (*)</Label>
+                <Input id="birthDay" name="birthDay" type="number" placeholder="DD" defaultValue={user.birthDay || ''} min="1" max="31" required />
+                {state.fieldErrors?.birthDay && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {state.fieldErrors.birthDay.join(', ')}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="birthMonth" className="text-xs">Month (*)</Label>
+                <Input id="birthMonth" name="birthMonth" type="number" placeholder="MM" defaultValue={user.birthMonth || ''} min="1" max="12" required />
+                {state.fieldErrors?.birthMonth && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {state.fieldErrors.birthMonth.join(', ')}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="birthYear" className="text-xs">Year</Label>
+                <Input id="birthYear" name="birthYear" type="number" placeholder="YYYY" defaultValue={user.birthYear || ''} min="1900" max={new Date().getFullYear()} />
+                {state.fieldErrors?.birthYear && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {state.fieldErrors.birthYear.join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Hidden input for fromLessonSlug removed */}                        
         </CardContent>
         <CardFooter className="border-t pt-6 flex flex-col sm:flex-row sm:justify-end sm:space-x-2">

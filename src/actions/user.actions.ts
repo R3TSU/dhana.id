@@ -36,9 +36,12 @@ export async function getCurrentInternalUser() {
 
 const completeProfileFormSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
-  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }), // Made required
-  fromLessonSlug: z.string().optional(), // Added fromLessonSlug for initial signup context
-  // Add other fields here if needed in the future, e.g., username
+  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }),
+  address: z.string().optional(),
+  birthDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
+  birthMonth: z.coerce.number().int().min(1).max(12).optional().nullable(),
+  birthYear: z.coerce.number().int().min(1900).max(new Date().getFullYear()).optional().nullable(),
+  fromLessonSlug: z.string().optional(),
 });
 
 export async function completeUserProfile(
@@ -47,7 +50,7 @@ export async function completeUserProfile(
 ): Promise<{
   success: boolean;
   error?: string;
-  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber" | "address" | "birthDay" | "birthMonth" | "birthYear", string[]>>;
 }> {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
@@ -62,7 +65,11 @@ export async function completeUserProfile(
   const rawFormData = {
     fullName: formData.get("fullName") as string,
     whatsappNumber: formData.get("whatsappNumber") as string | undefined,
-    fromLessonSlug: formData.get("fromLessonSlug") as string | null, // Capture fromLessonSlug
+    address: formData.get("address") as string | undefined,
+    birthDay: formData.get("birthDay") ? Number(formData.get("birthDay")) : undefined,
+    birthMonth: formData.get("birthMonth") ? Number(formData.get("birthMonth")) : undefined,
+    birthYear: formData.get("birthYear") ? Number(formData.get("birthYear")) : undefined,
+    fromLessonSlug: formData.get("fromLessonSlug") as string | null,
   };
 
   const validation = completeProfileFormSchema.safeParse(rawFormData);
@@ -75,13 +82,18 @@ export async function completeUserProfile(
     };
   }
 
-  let { fullName, whatsappNumber, fromLessonSlug } = validation.data; // Destructure fromLessonSlug
+  let { fullName, whatsappNumber, address, birthDay, birthMonth, birthYear, fromLessonSlug } = validation.data;
 
-if (whatsappNumber) {
-  whatsappNumber = normalizeMobileNumber(whatsappNumber);
-} else {
-  whatsappNumber = "";
-}
+  if (whatsappNumber) {
+    whatsappNumber = normalizeMobileNumber(whatsappNumber);
+  }
+  // Else block removed as whatsappNumber is guaranteed by schema to be non-empty
+
+  // Convert empty strings from form to null for optional number fields if not provided
+  const finalBirthDay = birthDay === undefined || birthDay === null || isNaN(birthDay) ? null : birthDay;
+  const finalBirthMonth = birthMonth === undefined || birthMonth === null || isNaN(birthMonth) ? null : birthMonth;
+  const finalBirthYear = birthYear === undefined || birthYear === null || isNaN(birthYear) ? null : birthYear;
+  const finalAddress = address === undefined || address === "" ? null : address;
 
   try {
     const existingUser = await getInternalUserByClerkId(clerkUserId);
@@ -92,6 +104,10 @@ if (whatsappNumber) {
       fullName: fullName,
       whatsappNumber: whatsappNumber, // Corrected to match schema property name
       avatar_url: clerkUser.imageUrl,
+      address: finalAddress,
+      birthDay: finalBirthDay,
+      birthMonth: finalBirthMonth,
+      birthYear: finalBirthYear,
       // role is defaulted by schema
     };
 
@@ -158,9 +174,12 @@ if (whatsappNumber) {
 
 // Schema for updating profile (only fullName for now)
 const updateUserProfileSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
-  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }), // Made required
-  // fromLessonSlug is removed from general profile updates
+  fullName: z.string().min(3, "Full name must be at least 3 characters"),
+  whatsappNumber: z.string().min(1, "WhatsApp number is required"),
+  address: z.string().min(1, "Address is required"), // Now required
+  birthDay: z.number().int().min(1, "Day must be between 1 and 31").max(31, "Day must be between 1 and 31"), // Now required
+  birthMonth: z.number().int().min(1, "Month must be between 1 and 12").max(12, "Month must be between 1 and 12"), // Now required
+  birthYear: z.number().int().min(1900, "Year must be 1900 or later").max(new Date().getFullYear(), `Year cannot be in the future`).optional().nullable(),
 });
 
 export async function updateUserProfile(
@@ -169,7 +188,7 @@ export async function updateUserProfile(
 ): Promise<{
   success: boolean;
   message?: string; // General message for success/error
-  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber" | "address" | "birthDay" | "birthMonth" | "birthYear", string[]>>;
 }> {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
@@ -179,7 +198,10 @@ export async function updateUserProfile(
   const rawFormData = {
     fullName: formData.get("fullName") as string,
     whatsappNumber: formData.get("whatsappNumber") as string | undefined,
-    // fromLessonSlug is removed
+    address: formData.get("address") as string | undefined,
+    birthDay: formData.get("birthDay") ? Number(formData.get("birthDay")) : undefined,
+    birthMonth: formData.get("birthMonth") ? Number(formData.get("birthMonth")) : undefined,
+    birthYear: formData.get("birthYear") ? Number(formData.get("birthYear")) : undefined,
   };
 
   const validation = updateUserProfileSchema.safeParse(rawFormData);
@@ -188,15 +210,20 @@ export async function updateUserProfile(
     return {
       success: false,
       message: "Invalid input.",
-      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "whatsappNumber" | "fromLessonSlug", string[]>>,
+      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "whatsappNumber" | "address" | "birthDay" | "birthMonth" | "birthYear", string[]>>,
     };
   }
 
-  let { fullName, whatsappNumber } = validation.data; // fromLessonSlug removed
+  let { fullName, whatsappNumber, address, birthDay, birthMonth, birthYear } = validation.data;
 
   if (whatsappNumber) {
     whatsappNumber = normalizeMobileNumber(whatsappNumber);
   }
+  // Else block removed as whatsappNumber is guaranteed by schema to be non-empty
+
+  // Convert empty strings from form to null for  // address, birthDay, birthMonth are now required by Zod, so they will be valid strings/numbers.
+  // birthYear is still optional and needs to be handled for nullability.
+  const finalBirthYear = birthYear === undefined || birthYear === null || isNaN(birthYear) ? null : birthYear;
 
   try {
     const internalUser = await getInternalUserByClerkId(clerkUserId);
@@ -207,9 +234,13 @@ export async function updateUserProfile(
 
     await db.update(users)
       .set({
-        fullName: fullName,
-        whatsappNumber: whatsappNumber === "" ? null : whatsappNumber, // Corrected to match schema property name
-        // Ensure updatedAt is handled by schema's $onUpdate or manually set here if needed
+          fullName: fullName,
+          whatsappNumber: whatsappNumber, // Already normalized
+          address: address, // Directly from validatedData, now required
+          birthDay: birthDay, // Directly from validatedData, now required
+          birthMonth: birthMonth, // Directly from validatedData, now required
+          birthYear: finalBirthYear, // Still optional, needs null conversion
+          updated_at: new Date(),
       })
       .where(eq(users.id, internalUser.id));
 
