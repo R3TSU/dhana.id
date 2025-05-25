@@ -2,14 +2,9 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { getEnrollmentsForAdminView, getCoursesForAdminFilter, AdminEnrollmentView } from '@/actions/admin/enrollment.actions';
 import { PaginationControls } from '@/components/shared/PaginationControls'; // Assuming this exists or will be created
-import EnrollmentFilterClient from '@/components/admin/enrollments/EnrollmentFilterClient'; // To be created
+import EnrollmentFilterClient from '@/components/admin/enrollments/EnrollmentFilterClient';
 
-interface AdminEnrollmentsPageProps {
-  searchParams: {
-    page?: string;
-    courseId?: string;
-  };
-}
+// Removed AdminEnrollmentsPageProps interface
 
 async function EnrollmentsTable({ currentPage, currentCourseId }: { currentPage: number; currentCourseId?: number }) {
   const { data: enrollments, totalCount, error } = await getEnrollmentsForAdminView({
@@ -43,9 +38,7 @@ async function EnrollmentsTable({ currentPage, currentCourseId }: { currentPage:
                 <div className="text-sm font-medium text-gray-900">{enrollment.userName || 'N/A'}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <Link href={`/admin/courses/${enrollment.courseId}/edit`} className="text-sm text-blue-600 hover:underline">
-                  {enrollment.courseName}
-                </Link>
+                <div className="text-sm text-gray-900">{enrollment.courseName || 'N/A'}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">{new Date(enrollment.enrollmentDate).toLocaleDateString()}</div>
@@ -65,9 +58,15 @@ async function EnrollmentsTable({ currentPage, currentCourseId }: { currentPage:
   );
 }
 
-export default async function AdminEnrollmentsPage({ searchParams }: AdminEnrollmentsPageProps) {
-  const currentPage = parseInt(searchParams.page || '1', 10);
-  const currentCourseId = searchParams.courseId ? parseInt(searchParams.courseId, 10) : undefined;
+export default async function AdminEnrollmentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; courseId?: string }>;
+}) {
+  const { page = '1', courseId = '' } = await searchParams || {};
+
+  const currentPage = parseInt(page, 10);
+  const currentCourseId = courseId ? parseInt(courseId, 10) : undefined;
 
   const { data: coursesForFilter, error: filterError } = await getCoursesForAdminFilter();
 
