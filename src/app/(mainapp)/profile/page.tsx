@@ -20,10 +20,11 @@ export default async function ProfilePage() {
   const userData = {
     email: internalUser.email || null,
     fullName: internalUser.fullName || null,
+    whatsappNumber: internalUser.whatsappNumber || null, // Added whatsappNumber
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="flex flex-col min-h-screen bg-purple-800 text-white">
       <EditProfileForm user={userData} />
 
       <div className="w-full max-w-lg mx-auto mt-8 mb-12">

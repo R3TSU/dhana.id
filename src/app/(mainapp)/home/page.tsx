@@ -24,10 +24,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col mb-12">
+    <div className="flex flex-col min-h-screen bg-purple-800 text-white">
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-12"> {/* Added py-12 for vertical spacing */}
-          <h1 className="text-4xl font-bold text-center text-indigo mb-10">Explore Our Courses</h1>
+          <h1 className="text-4xl font-bold text-center text-white mb-10">Explore Our Courses</h1>
           <section className="">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Increased gap */}
               {coursesData.map((course: PublicCourse) => (

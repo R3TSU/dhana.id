@@ -8,6 +8,7 @@ import VideoPlayer from "./VideoPlayer"; // Will now be in the same [slug] direc
 import { getLessonDetailsBySlug } from "@/actions/admin/lesson.actions"; // Import new action
 import { hasLessonAccessOverride, getUserEnrollmentForCourse } from "@/actions/enrollment.actions";
 import { Metadata } from "next"; // For dynamic metadata
+import PageHeaderWithBackLink from "@/components/layout/PageHeaderWithBackLink";
 
 // Define props for the page
 interface LessonPageProps {
@@ -105,22 +106,15 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
   }
     
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-main">
+    <div className="flex flex-col min-h-screen bg-purple-800 text-white">
+      <PageHeaderWithBackLink href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'} linkText={`Back to ${lessonData.courseSlug ? 'Course' : 'Home'}`} />
+
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8"> {/* Added py-8 for padding */}
           {/* Back button */}
-          <Link href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'}>
-            <Button 
-              variant="ghost" 
-              className="mb-6 text-indigo hover:text-coral hover:bg-transparent p-0"
-            >
-              <ArrowLeft size={16} className="mr-2" /> 
-              Back to {lessonData.courseSlug ? 'Course' : 'Home'}
-            </Button>
-          </Link>
           
           <div>
-            <h1 className="text-3xl font-bold text-indigo mb-4">{lessonData.title}</h1>
+            <h1 className="text-3xl font-bold text-white mb-4">{lessonData.title}</h1>
           </div> 
 
           {/* Video Player */}

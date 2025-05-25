@@ -17,6 +17,7 @@ export const users = pgTable('users', {
     clerk_user_id: text('clerk_user_id').unique().notNull(),
     email: text('email'),
     fullName: text('full_name'), // Changed from first_name and last_name
+    whatsappNumber: text('whatsapp_number'), // New field for WhatsApp number
     role: text('role').default('user'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),

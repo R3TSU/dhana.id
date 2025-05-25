@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { grantLessonAccessOnSignup } from "./enrollment.actions";
+import { normalizeMobileNumber } from "@/lib/utils"; // Import the new function
 
 // Helper to get internal user by Clerk ID, can be used by other actions too
 export async function getInternalUserByClerkId(clerkId: string) {
@@ -35,6 +36,7 @@ export async function getCurrentInternalUser() {
 
 const completeProfileFormSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }), // Made required
   fromLessonSlug: z.string().optional(), // Added fromLessonSlug for initial signup context
   // Add other fields here if needed in the future, e.g., username
 });
@@ -45,7 +47,7 @@ export async function completeUserProfile(
 ): Promise<{
   success: boolean;
   error?: string;
-  fieldErrors?: Partial<Record<"fullName", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
 }> {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
@@ -59,6 +61,7 @@ export async function completeUserProfile(
 
   const rawFormData = {
     fullName: formData.get("fullName") as string,
+    whatsappNumber: formData.get("whatsappNumber") as string | undefined,
     fromLessonSlug: formData.get("fromLessonSlug") as string | null, // Capture fromLessonSlug
   };
 
@@ -68,11 +71,17 @@ export async function completeUserProfile(
     return {
       success: false,
       error: "Invalid input.",
-      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName", string[]>>,
+      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "whatsappNumber", string[]>>,
     };
   }
 
-  const { fullName, fromLessonSlug } = validation.data; // Destructure fromLessonSlug
+  let { fullName, whatsappNumber, fromLessonSlug } = validation.data; // Destructure fromLessonSlug
+
+if (whatsappNumber) {
+  whatsappNumber = normalizeMobileNumber(whatsappNumber);
+} else {
+  whatsappNumber = "";
+}
 
   try {
     const existingUser = await getInternalUserByClerkId(clerkUserId);
@@ -81,6 +90,7 @@ export async function completeUserProfile(
       clerk_user_id: clerkUserId,
       email: clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress || '',
       fullName: fullName,
+      whatsappNumber: whatsappNumber, // Corrected to match schema property name
       avatar_url: clerkUser.imageUrl,
       // role is defaulted by schema
     };
@@ -149,6 +159,7 @@ export async function completeUserProfile(
 // Schema for updating profile (only fullName for now)
 const updateUserProfileSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }), // Made required
   // fromLessonSlug is removed from general profile updates
 });
 
@@ -158,7 +169,7 @@ export async function updateUserProfile(
 ): Promise<{
   success: boolean;
   message?: string; // General message for success/error
-  fieldErrors?: Partial<Record<"fullName", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
 }> {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
@@ -167,6 +178,7 @@ export async function updateUserProfile(
 
   const rawFormData = {
     fullName: formData.get("fullName") as string,
+    whatsappNumber: formData.get("whatsappNumber") as string | undefined,
     // fromLessonSlug is removed
   };
 
@@ -176,11 +188,15 @@ export async function updateUserProfile(
     return {
       success: false,
       message: "Invalid input.",
-      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "fromLessonSlug", string[]>>,
+      fieldErrors: validation.error.flatten().fieldErrors as Partial<Record<"fullName" | "whatsappNumber" | "fromLessonSlug", string[]>>,
     };
   }
 
-  const { fullName } = validation.data; // fromLessonSlug removed
+  let { fullName, whatsappNumber } = validation.data; // fromLessonSlug removed
+
+  if (whatsappNumber) {
+    whatsappNumber = normalizeMobileNumber(whatsappNumber);
+  }
 
   try {
     const internalUser = await getInternalUserByClerkId(clerkUserId);
@@ -192,6 +208,7 @@ export async function updateUserProfile(
     await db.update(users)
       .set({
         fullName: fullName,
+        whatsappNumber: whatsappNumber === "" ? null : whatsappNumber, // Corrected to match schema property name
         // Ensure updatedAt is handled by schema's $onUpdate or manually set here if needed
       })
       .where(eq(users.id, internalUser.id));

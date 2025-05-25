@@ -35,3 +35,9 @@ export function generateSlug(text: string): string {
 
   return `${truncatedBaseSlug}-${randomSuffix}`;
 }
+
+export function normalizeMobileNumber(number: string) {
+  // Remove all non-digit characters
+  const normalized = number.replace(/\D/g, '');
+  return normalized;
+}

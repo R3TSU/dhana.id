@@ -11,7 +11,7 @@ import { toast } from 'sonner'; // Assuming you use sonner for toasts
 const initialState: { 
   success: boolean; 
   error?: string; 
-  fieldErrors?: Partial<Record<"fullName", string[]>>; 
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>; 
 } = {
   success: false,
 };
@@ -48,7 +48,11 @@ export default function CompleteProfileForm({ initialEmail }: { initialEmail?: s
       // toast.success('Profile completed successfully!'); // Optional: if redirect allows toast to show
     }
     if (state.error) {
-      toast.error(state.error, { description: state.fieldErrors?.fullName?.join(', ') });
+      const description = [
+        state.fieldErrors?.fullName?.join(', '),
+        state.fieldErrors?.whatsappNumber?.join(', ')
+      ].filter(Boolean).join('; ');
+      toast.error(state.error, { description: description || undefined });
     }
   }, [state]);
 
@@ -78,6 +82,23 @@ export default function CompleteProfileForm({ initialEmail }: { initialEmail?: s
         {state.fieldErrors?.fullName && (
           <p className="mt-1 text-xs text-red-500">
             {state.fieldErrors.fullName.join(', ')}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="whatsappNumber">WhatsApp Number (*)</Label>
+        <Input
+          id="whatsappNumber"
+          name="whatsappNumber"
+          type="text"
+          placeholder="Enter your WhatsApp number"
+          required // Added required attribute
+          className="mt-1"
+        />
+        {state.fieldErrors?.whatsappNumber && (
+          <p className="mt-1 text-xs text-red-500">
+            {state.fieldErrors.whatsappNumber.join(', ')}
           </p>
         )}
       </div>

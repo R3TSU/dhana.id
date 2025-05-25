@@ -51,15 +51,15 @@ interface VideoCardProps {
         </div>
         
         <div className="p-4 flex flex-col flex-grow">
-          <h3 className={cn(
-            "text-lg font-medium mb-3 text-indigo transition-colors",
-            isAvailable && "group-hover:text-coral"
-            )}>{title}</h3>
-          
+          <h2 className="text-xl font-semibold text-orange-500">{title}</h2>
+          {/* short desc if needed */}
+          {/* <p className="text-gray-600 mt-2">
+            {title}
+          </p> */}
           {isAvailable ? (
             <Link href={`/lesson/${lessonSlug}`}>
             <Button 
-              className="bg-lavender hover:bg-violet-500 w-full text-white transition-colors mt-auto"
+              className="w-full bg-purple-600 text-white transition-colors mt-auto"
               // Link wrapper handles navigation
             >
               Watch Now <Play size={16} className="ml-2" />
@@ -68,7 +68,7 @@ interface VideoCardProps {
           ) : (
             // Coming Soon state
             <Button 
-              className="bg-slate-300 text-slate-500 cursor-not-allowed w-full mt-auto"
+              className="mt-auto w-full bg-slate-300 text-slate-500 cursor-not-allowed"
               disabled
             >
               Coming Soon

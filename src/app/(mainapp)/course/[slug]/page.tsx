@@ -4,6 +4,7 @@ import Link from "next/link";
 import VideoCard from "@/components/course/VideoCard";
 import { getCourseWithLessonsBySlug, type CourseWithLessons, type PublicLessonForCoursePage } from "@/actions/admin/course.actions"; // Adjust path if needed
 import { enrollInCourse, getUserEnrollmentForCourse, hasLessonAccessOverride } from "@/actions/enrollment.actions"; // Import new actions
+import PageHeaderWithBackLink from '@/components/layout/PageHeaderWithBackLink'; 
 
 export default async function CoursePage({
   params,
@@ -98,30 +99,20 @@ export default async function CoursePage({
     .filter(lesson => lesson.availabilityStatus !== 'hidden');
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-main">
+    <div className="flex flex-col min-h-screen bg-purple-800 text-white">
       {/* <Navbar isScrolled={isScrolled} /> */}
-      
-      <main className="flex-grow">
+      <PageHeaderWithBackLink href="/home" linkText="Back to Courses" />
+
+      <main className="flex-1 p-4 overflow-y-auto">
         <div className="container mx-auto px-4">
-          {/* Back button */}
-          <Link href="/home">
-            <Button 
-                variant="ghost" 
-                className="mb-6 text-indigo hover:text-coral hover:bg-transparent p-0"
-            >
-                <ArrowLeft size={16} className="mr-2" /> Back to Courses
-            </Button>
-          </Link>
-          
           {/* Course Header */}
-          <div className="mb-12">
-            <h1 className="text-3xl font-bold text-indigo mb-2">{course.title}</h1>
-            <p className="text-lg text-charcoal/80">{course.description ?? 'No description available.'}</p>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">{course.title}</h1>
+            <p className="text-lg text-white">{course.description ?? 'No description available.'}</p>
           </div>
           
           {/* Lessons Grid */}
           <div className="mb-16">
-            <h2 className="text-2xl font-semibold text-indigo mb-6">Lessons</h2>
             {enrollmentError && <p className='text-sm text-red-500 mb-4'>{enrollmentError}</p>}
             {processedLessonsWithOverrides && processedLessonsWithOverrides.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -139,7 +130,7 @@ export default async function CoursePage({
                 ))}
               </div>
             ) : (
-              <p className="text-charcoal/70">No lessons available for this course yet. Check back soon!</p>
+              <p className="text-white text-lg opacity-70">No lessons available for this course yet. Check back soon!</p>
             )}
           </div>
         </div>

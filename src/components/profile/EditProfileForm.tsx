@@ -14,13 +14,14 @@ interface EditProfileFormProps {
   user: {
     email: string | null;
     fullName: string | null;
+    whatsappNumber: string | null;
   };
 }
 
 const initialState: {
   success: boolean;
   message?: string;
-  fieldErrors?: Partial<Record<"fullName", string[]>>;
+  fieldErrors?: Partial<Record<"fullName" | "whatsappNumber", string[]>>;
 } = {
   success: false,
 };
@@ -28,7 +29,7 @@ const initialState: {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+    <Button type="submit" disabled={pending} className="w-full">
       {pending ? 'Saving...' : 'Save Changes'}
     </Button>
   );
@@ -46,21 +47,25 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
         toast.success(state.message);
         // Logic for clearing fromLessonSlug from sessionStorage removed
       } else {
+        const description = [
+          state.fieldErrors?.fullName?.join(', '),
+          state.fieldErrors?.whatsappNumber?.join(', ')
+        ].filter(Boolean).join('; ');
         toast.error(state.message, { 
-          description: state.fieldErrors?.fullName?.join(', ')
+          description: description || undefined
         });
       }
     }
   }, [state]);
 
   return (
-    <Card className="w-full max-w-lg mx-auto mt-8 mb-12">
+    <Card className="w-full max-w-lg mx-auto mt-8">
       <CardHeader>
         <CardTitle>Edit Profile</CardTitle>
         <CardDescription>Update your personal information. Email is read-only.</CardDescription>
       </CardHeader>
       <form action={formAction}>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 mb-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -87,7 +92,23 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               </p>
             )}
           </div>
-          {/* Hidden input for fromLessonSlug removed */}
+          <div className="space-y-2">
+            <Label htmlFor="whatsappNumber">WhatsApp Number (*)</Label>
+            <Input
+              id="whatsappNumber"
+              name="whatsappNumber"
+              type="text"
+              defaultValue={user.whatsappNumber || ''}
+              placeholder="Enter your WhatsApp number"
+              required // Added required attribute
+            />
+            {state.fieldErrors?.whatsappNumber && (
+              <p className="mt-1 text-xs text-red-500">
+                {state.fieldErrors.whatsappNumber.join(', ')}
+              </p>
+            )}
+          </div>
+          {/* Hidden input for fromLessonSlug removed */}                        
         </CardContent>
         <CardFooter className="border-t pt-6 flex flex-col sm:flex-row sm:justify-end sm:space-x-2">
           <SubmitButton />
