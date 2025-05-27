@@ -30,7 +30,21 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Step 1: Handle unauthenticated users trying to access protected routes
   if (!userId && isProtectedRoute(req)) {
-    console.log(`User not authenticated for protected route: ${req.nextUrl.pathname}. Redirecting to sign-in.`);
+    const pathname = req.nextUrl.pathname;
+
+    // If unauthenticated user tries to access a full lesson page, redirect to its preview
+    if (pathname.startsWith('/lesson/')) {
+      const slug = pathname.substring('/lesson/'.length);
+      if (slug) {
+        const previewUrl = new URL(`/lesson-previews/${slug}`, req.nextUrl.origin);
+        console.log(`Unauthenticated user accessing lesson ${slug}. Redirecting to preview: ${previewUrl.toString()}`);
+        return NextResponse.redirect(previewUrl);
+      }
+      // If slug is somehow empty (e.g., /lesson/), fall through to general sign-in redirect
+    }
+
+    // For other protected routes, redirect to sign-in
+    console.log(`User not authenticated for protected route: ${pathname}. Redirecting to sign-in.`);
     return redirectToSignIn({ returnBackUrl: req.url });
   }
 

@@ -14,10 +14,14 @@ import { toast } from "sonner";
 export default function ShareButton({ lessonSlug, lessonTitle }: { lessonSlug: string, lessonTitle?: string }) {
     const [shareUrl, setShareUrl] = useState('');
     const [copied, setCopied] = useState(false);
+    const [webShareApiAvailable, setWebShareApiAvailable] = useState(false);
 
     useEffect(() => {
       if (typeof window !== 'undefined' && lessonSlug) {
         setShareUrl(`${window.location.origin}/lesson-previews/${lessonSlug}`);
+      }
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        setWebShareApiAvailable(true);
       }
     }, [lessonSlug]);
 
@@ -35,7 +39,35 @@ export default function ShareButton({ lessonSlug, lessonTitle }: { lessonSlug: s
     };
 
     const shareQuote = lessonTitle ? `Check out this lesson: ${lessonTitle}` : 'Check out this lesson!';
+
+    const handleNativeShare = async () => {
+      if (navigator.share && shareUrl) {
+        try {
+          await navigator.share({
+            title: lessonTitle || 'Dhana.id Lesson',
+            text: shareQuote,
+            url: shareUrl,
+          });
+          toast.success("Shared successfully!");
+        } catch (error) {
+          // Handle errors (e.g., user cancelled share dialog)
+          // Don't show an error toast if it's just AbortError
+          if (error instanceof Error && error.name !== 'AbortError') {
+             toast.error("Could not share: " + error.message);
+          }
+        }
+      }
+    };
       
+    if (webShareApiAvailable) {
+      return (
+        <Button variant="outline" className="mt-4 bg-purple-500 text-white" onClick={handleNativeShare}>
+          <Share2 size={18} className="mr-2" /> Share Lesson
+        </Button>
+      );
+    }
+
+    // Fallback to Popover if Web Share API is not available
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -50,9 +82,7 @@ export default function ShareButton({ lessonSlug, lessonTitle }: { lessonSlug: s
               {copied ? 'Copied!' : 'Copy Link'}
             </Button>
             <FacebookShare url={shareUrl} quote={shareQuote} size={32} className="mr-2">
-              {/* This child is necessary for react-share-lite to render the button correctly */}
-              {/* We style it to look like our other buttons */} 
-                Facebook
+              Facebook
             </FacebookShare>
             <WhatsappShare url={shareUrl} title={shareQuote} size={32} separator=":: ">
               WhatsApp
