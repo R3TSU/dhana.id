@@ -111,7 +111,7 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
       <main className="flex-grow relative">
         <BackgroundOverlay />
         <div className="relative z-10">
-        <PageHeaderWithBackLink href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'} linkText={`Back to ${lessonData.courseSlug ? 'Course' : 'Home'}`} />
+        <PageHeaderWithBackLink href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'} linkText={`Back to ${lessonData.courseSlug ? 'Program' : 'Home'}`} />
 
         <div className="container mx-auto px-4 py-8"> {/* Added py-8 for padding */}
           {/* Back button */}
@@ -121,7 +121,7 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
           </div> 
 
           {/* Video Player */}
-          <div className="mb-8 bg-black rounded-lg overflow-hidden shadow-xl">
+          <div className="mb-8">
             <VideoPlayer videoUrl={lessonData.video_url || ''} title={lessonData.title} />
           </div>
           
