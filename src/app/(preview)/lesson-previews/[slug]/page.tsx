@@ -4,7 +4,11 @@ import { getLessonDetailsBySlug } from '@/actions/admin/lesson.actions'; // Assu
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Eye, Lock } from 'lucide-react';
 import { GetStarted } from '@/components/GetStarted';
-import { LessonPreviewRedirector } from '@/components/LessonPreviewRedirector';
+import { PreviewPageClientWrapper } from '@/components/PreviewPageClientWrapper';
+import BackgroundOverlay from '@/components/layout/BackgroundOverlay';
+
+// Force static generation for this page to enable caching
+export const dynamic = 'force-static';
 
 interface LessonPreviewPageProps {
   params: Promise<{ slug: string }>;
@@ -71,9 +75,10 @@ export default async function LessonPreviewPage({ params: paramsPromise }: { par
   const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(fullLessonUrl)}`;
 
   return (
-    <>
-      <LessonPreviewRedirector lessonSlug={slug} />
-      <div className="container mx-auto px-4 py-8">
+    <PreviewPageClientWrapper lessonSlug={slug}>
+      <div className="min-h-screen relative">
+        <BackgroundOverlay />
+        <div className="container mx-auto px-4 py-8 relative z-10">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
         {lessonData.thumbnail_url && (
           <img 
@@ -84,13 +89,6 @@ export default async function LessonPreviewPage({ params: paramsPromise }: { par
         )}
         <div className="p-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-3">{lessonData.title}</h1>
-          <p className="text-gray-600 mb-2 text-xl">{lessonData.courseTitle || 'N/A'}</p>
-          
-          <div className="prose prose-lg max-w-none text-gray-700 mb-6">
-            {/* Display a short description or key points as a teaser */}
-            <p>{lessonData.description ? lessonData.description.substring(0, 300) + '...' : 'No preview description available.'}</p>
-            {/* You could also list a few bullet points from the lesson if available */}
-          </div>
 
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md mb-6">
             <div className="flex">
@@ -117,6 +115,7 @@ export default async function LessonPreviewPage({ params: paramsPromise }: { par
         </div>
       </div>
     </div>
-    </>
+      </div>
+    </PreviewPageClientWrapper>
   );
 }

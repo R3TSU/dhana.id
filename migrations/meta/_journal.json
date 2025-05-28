@@ -50,6 +50,20 @@
       "when": 1748169354752,
       "tag": "0006_grey_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748428526008,
+      "tag": "0007_keen_eternity",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1748429969781,
+      "tag": "0008_faithful_khan",
+      "breakpoints": true
     }
   ]
 }

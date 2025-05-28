@@ -9,6 +9,7 @@ import { getLessonDetailsBySlug } from "@/actions/admin/lesson.actions"; // Impo
 import { hasLessonAccessOverride, getUserEnrollmentForCourse } from "@/actions/enrollment.actions";
 import { Metadata } from "next"; // For dynamic metadata
 import PageHeaderWithBackLink from "@/components/layout/PageHeaderWithBackLink";
+import BackgroundOverlay from "@/components/layout/BackgroundOverlay";
 
 // Define props for the page
 interface LessonPageProps {
@@ -107,9 +108,11 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
     
   return (
     <div className="flex flex-col min-h-screen bg-purple-800 text-white">
-      <PageHeaderWithBackLink href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'} linkText={`Back to ${lessonData.courseSlug ? 'Course' : 'Home'}`} />
+      <main className="flex-grow relative">
+        <BackgroundOverlay />
+        <div className="relative z-10">
+        <PageHeaderWithBackLink href={lessonData.courseSlug ? `/course/${lessonData.courseSlug}` : '/home'} linkText={`Back to ${lessonData.courseSlug ? 'Course' : 'Home'}`} />
 
-      <main className="flex-grow">
         <div className="container mx-auto px-4 py-8"> {/* Added py-8 for padding */}
           {/* Back button */}
           
@@ -144,6 +147,7 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
             <Notes lessonId={lessonData.id} /> 
           </div>
         </div>
+      </div>
       </main>
     </div>
   );

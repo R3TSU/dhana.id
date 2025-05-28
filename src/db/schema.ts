@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, timestamp, index, uniqueIndex, boolean } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // CREATE TABLE users (
@@ -33,8 +33,11 @@ export const courses = pgTable('courses', {
     id: serial('id').primaryKey(),
     slug: text('slug').notNull().unique(),
     title: text('title').notNull(),
+    subtitle: text('subtitle'),
     description: text('description'),   
     thumbnail_url: text('thumbnail_url'),
+    is_active: boolean('is_active').default(true).notNull(),
+    start_date: timestamp('start_date'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
 }, (table) => [

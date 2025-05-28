@@ -15,6 +15,10 @@ const isProtectedRoute = createRouteMatcher([
   '/admin(.*)',               // All admin pages
 ]);
 
+const isAdminRoute = createRouteMatcher([
+  '/admin(.*)',               // All admin pages
+]);
+
 // Define routes that require a completed profile (these also imply authentication)
 const routesRequiringCompletedProfile = createRouteMatcher([
   '/home(.*)',
@@ -48,21 +52,35 @@ export default clerkMiddleware(async (auth, req) => {
     return redirectToSignIn({ returnBackUrl: req.url });
   }
 
-  // Step 2: Handle authenticated users trying to access routes requiring a completed profile
-  if (userId && routesRequiringCompletedProfile(req)) {
-    // User is authenticated, check for profile completion.
+  // Step 2: Handle authenticated users
+  if (userId) {
+    // User is authenticated, fetch their profile data
     const internalUser = await db.query.users.findFirst({
       where: eq(users.clerk_user_id, userId),
-      columns: { fullName: true } // Only fetch fullName for the check
+      columns: { fullName: true, role: true }
     });
 
-    // If profile is not complete (no internal record or no fullName)
-    if (!internalUser || !internalUser.fullName) {
-      const completeProfileUrl = new URL('/complete-profile', req.url);
-      // Prevent redirect loop if already on /complete-profile
-      if (req.nextUrl.pathname !== '/complete-profile') {
-        console.log(`User profile not complete for: ${req.nextUrl.pathname}. Redirecting to /complete-profile.`);
-        return NextResponse.redirect(completeProfileUrl);
+    // Step 3: Handle admin routes - check if user has admin role
+    if (isAdminRoute(req)) {
+      if (internalUser?.role !== 'admin') {
+        console.log(`Non-admin user attempted to access admin route: ${req.nextUrl.pathname}. Redirecting to /home.`);
+        const homeUrl = new URL('/home', req.url);
+        return NextResponse.redirect(homeUrl);
+      }
+      // User is admin, allow access to admin routes
+      return NextResponse.next();
+    }
+
+    // Step 4: Handle routes requiring completed profile
+    if (routesRequiringCompletedProfile(req)) {
+      // If profile is not complete (no internal record or no fullName)
+      if (!internalUser || !internalUser.fullName) {
+        // Prevent redirect loop if already on /complete-profile
+        if (req.nextUrl.pathname !== '/complete-profile') {
+          console.log(`User profile not complete for: ${req.nextUrl.pathname}. Redirecting to /complete-profile.`);
+          const completeProfileUrl = new URL('/complete-profile', req.url);
+          return NextResponse.redirect(completeProfileUrl);
+        }
       }
     }
   }

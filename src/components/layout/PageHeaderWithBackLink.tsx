@@ -8,7 +8,7 @@ interface PageHeaderWithBackLinkProps {
 
 export default function PageHeaderWithBackLink({ href, linkText }: PageHeaderWithBackLinkProps) {
   return (
-    <header className="bg-purple-900 p-4">
+    <header className="p-4">
       <div className="container mx-auto px-4">
         <nav>
           <Link href={href} className="inline-flex items-center text-sm font-medium text-white hover:text-gray-300 transition-colors">

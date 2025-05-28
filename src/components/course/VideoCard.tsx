@@ -51,7 +51,7 @@ interface VideoCardProps {
         </div>
         
         <div className="p-4 flex flex-col flex-grow">
-          <h2 className="text-xl font-semibold text-orange-500">{title}</h2>
+          <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
           {/* short desc if needed */}
           {/* <p className="text-gray-600 mt-2">
             {title}
@@ -59,7 +59,7 @@ interface VideoCardProps {
           {isAvailable ? (
             <Link href={`/lesson/${lessonSlug}`}>
             <Button 
-              className="w-full bg-purple-600 text-white transition-colors mt-auto"
+              className="w-full bg-purple-500/70 text-white transition-colors mt-auto"
               // Link wrapper handles navigation
             >
               Watch Now <Play size={16} className="ml-2" />
