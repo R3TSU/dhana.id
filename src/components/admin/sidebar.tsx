@@ -27,6 +27,10 @@ const data = {
             title: "Enrollments",
             url: "/admin/enrollments",
           },
+          {
+            title: "Users",
+            url: "/admin/users",
+          },
         ],
       },
     ],

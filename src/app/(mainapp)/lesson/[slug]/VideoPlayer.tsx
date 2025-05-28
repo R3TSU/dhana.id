@@ -1,7 +1,8 @@
+"use client";
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
-import { MediaPlayer, MediaProvider } from '@vidstack/react';
-import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
+import { MediaPlayer, MediaProvider, Poster, Track } from "@vidstack/react"
+import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -19,7 +20,7 @@ export default function VideoPlayer({ videoUrl, title = "Lesson Video" }: VideoP
                 streamType="on-demand"
                 logLevel="warn"
                 crossOrigin
-                // playsInline
+                playsInline
                 storage="storage-key"
                 >
                 <MediaProvider />
