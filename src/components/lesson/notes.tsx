@@ -45,17 +45,39 @@ export default function Notes({ lessonId }: NotesProps) {
 
   // Save note
   const handleSaveNote = useCallback(async () => {
-    const contentToSave = noteContent; // Use current noteContent
-    if (!lessonId) return;
+    const contentToSave = noteContent.trim(); // Trim whitespace
+    console.log("[Notes] Attempting to save note with content length:", contentToSave.length);
+    
+    if (!lessonId) {
+      console.log("[Notes] Error: No lessonId provided");
+      return;
+    }
+    
+    // Validate that content is not empty
+    if (!contentToSave) {
+      setError("Cannot save empty notes. Please add some content.");
+      setStatusMessage("Error: Empty notes");
+      console.log("[Notes] Error: Attempted to save empty note");
+      setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
     
     setIsSaving(true);
     setError(null);
     setStatusMessage("Saving...");
     try {
+      console.log("[Notes] Calling upsertLessonNote with:", { 
+        lessonId, 
+        contentLength: contentToSave.length 
+      });
+      
       const { note, error: saveError, success } = await upsertLessonNote({ 
         lessonId,
         content: contentToSave 
       });
+      
+      console.log("[Notes] Save result:", { success, hasError: !!saveError, noteId: note?.id });
+      
       if (saveError || !success) {
         setError(saveError || "Failed to save note.");
         setStatusMessage("Error saving notes.");
@@ -67,12 +89,12 @@ export default function Notes({ lessonId }: NotesProps) {
     } catch (e) {
       setError("An unexpected error occurred while saving notes.");
       setStatusMessage("Error saving notes.");
-      console.error(e);
+      console.error("[Notes] Exception during save:", e);
     }
     setIsSaving(false);
     // Clear status message after a delay
     setTimeout(() => setStatusMessage(null), 3000);
-  }, [lessonId]);
+  }, [lessonId, noteContent]);
 
 
 
@@ -90,7 +112,7 @@ export default function Notes({ lessonId }: NotesProps) {
           Take notes as you watch the video. Click the button below to save your notes.
         </p>
         <Textarea
-          className="min-h-[300px] border-indigo/30 focus:border-indigo flex-grow"
+          className="min-h-[300px] border-indigo/30 focus:border-indigo text-black flex-grow"
           placeholder={isLoading ? "Loading notes..." : "Start typing your notes here..."}
           value={noteContent}
           onChange={handleTextChange}

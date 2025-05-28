@@ -187,7 +187,7 @@ export async function updateCourse(id: number, prevState: any, formData: FormDat
 
   const title = formData.get('title') as string;
   // Use the existing slug instead of generating a new one
-  const slug = existingCourse.slug;
+  const slug = existingCourseResult.data.slug;
 
   const validatedFormFields = courseFormSchema.safeParse({
     title: title,
