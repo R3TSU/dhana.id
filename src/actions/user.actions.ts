@@ -5,25 +5,32 @@ import { db } from "@/db/drizzle";
 import { users } from "@/db/schema";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { grantLessonAccessOnSignup } from "./enrollment.actions";
 import { normalizeMobileNumber } from "@/lib/utils"; // Import the new function
 
 // Helper to get internal user by Clerk ID, can be used by other actions too
-export async function getInternalUserByClerkId(clerkId: string) {
-  if (!clerkId) return null;
-  try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.clerk_user_id, clerkId),
-    });
-    return user || null;
-  } catch (error) {
-    console.error("Error fetching internal user by Clerk ID:", error);
-    return null;
+export const getInternalUserByClerkId = unstable_cache(
+  async (clerkId: string) => {
+    if (!clerkId) return null;
+    try {
+      const user = await db.query.users.findFirst({
+        where: eq(users.clerk_user_id, clerkId),
+      });
+      return user || null;
+    } catch (error) {
+      console.error("Error fetching internal user by Clerk ID:", error);
+      return null;
+    }
+  },
+  ['user-by-clerk-id'],
+  {
+    revalidate: 60, // Cache for 60 seconds
+    tags: [`user-by-clerk-id`], // Static tag for the entire function
   }
-}
+);
 
 // Action to get the current logged-in user's internal profile
 export async function getCurrentInternalUser() {
@@ -123,9 +130,15 @@ export async function completeUserProfile(
           // updatedAt is handled by schema's $onUpdate
         })
         .where(eq(users.id, existingUser.id));
+        
+      // Invalidate the user cache
+      revalidateTag(`user-by-clerk-id`);
     } else {
       // Create new user
       await db.insert(users).values(userData);
+      
+      // Invalidate the user cache
+      revalidateTag(`user-by-clerk-id`);
     }
 
     revalidatePath("/profile"); // Revalidate profile page if you have one
@@ -243,6 +256,9 @@ export async function updateUserProfile(
           updated_at: new Date(),
       })
       .where(eq(users.id, internalUser.id));
+      
+    // Invalidate the user cache
+    revalidateTag(`user-by-clerk-id`);
 
     revalidatePath("/profile");
 

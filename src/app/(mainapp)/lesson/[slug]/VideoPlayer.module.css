@@ -1,0 +1,3 @@
+.media-player[data-view-type="video"] {
+  aspect-ratio: 16 / 9;
+}

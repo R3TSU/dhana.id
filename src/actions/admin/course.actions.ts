@@ -146,10 +146,24 @@ export async function updateCourse(id: number, prevState: any, formData: FormDat
   if (existingCourseResult.error || !existingCourseResult.data) {
     return { message: 'Error', errors: { _form: ['Course not found or failed to fetch existing data.'] } };
   }
-  const existingThumbnailUrl = existingCourseResult.data.thumbnail_url;
-  let newThumbnailUrl: string | null | undefined = existingThumbnailUrl; // Default to existing
 
-  if (thumbnailFile && thumbnailFile.size > 0) {
+  const existingCourse = existingCourseResult.data;
+  let newThumbnailUrl = existingCourse.thumbnail_url;
+
+  // Handle thumbnail removal if requested
+  if (removeThumbnail) {
+    if (existingCourse.thumbnail_url) {
+      try {
+        await deleteFileFromR2(existingCourse.thumbnail_url);
+      } catch (deleteError) {
+        console.error('Error deleting thumbnail from R2:', deleteError);
+        // Continue with update even if thumbnail deletion fails
+      }
+    }
+    newThumbnailUrl = null;
+  } 
+  // Handle thumbnail upload if provided
+  else if (thumbnailFile && thumbnailFile.size > 0) {
     const uploadResult = await uploadFileToR2(thumbnailFile, 'courses/thumbnails');
     if ('error' in uploadResult) {
       return {
@@ -157,28 +171,23 @@ export async function updateCourse(id: number, prevState: any, formData: FormDat
         errors: { _form: [uploadResult.error] },
       };
     }
+    
+    // Delete old thumbnail if it exists and a new one is uploaded
+    if (existingCourse.thumbnail_url) {
+      try {
+        await deleteFileFromR2(existingCourse.thumbnail_url);
+      } catch (deleteError) {
+        console.error('Error deleting old thumbnail from R2:', deleteError);
+        // Continue with update even if old thumbnail deletion fails
+      }
+    }
+    
     newThumbnailUrl = uploadResult.url;
-    // If there was an old thumbnail and we're uploading a new one, delete the old one
-    if (existingThumbnailUrl && existingThumbnailUrl !== newThumbnailUrl) {
-      const deleteResult = await deleteFileFromR2(existingThumbnailUrl);
-      if ('error' in deleteResult) {
-        console.warn(`Failed to delete old thumbnail ${existingThumbnailUrl}: ${deleteResult.error}`);
-        // Non-critical, proceed with update but log the issue
-      }
-    }
-  } else if (removeThumbnail) {
-    if (existingThumbnailUrl) {
-      const deleteResult = await deleteFileFromR2(existingThumbnailUrl);
-      if ('error' in deleteResult) {
-        console.warn(`Failed to delete thumbnail ${existingThumbnailUrl}: ${deleteResult.error}`);
-        // Non-critical, proceed with update but log the issue
-      }
-    }
-    newThumbnailUrl = null;
   }
 
   const title = formData.get('title') as string;
-  const generatedSlug = generateSlug(title);
+  // Use the existing slug instead of generating a new one
+  const slug = existingCourse.slug;
 
   const validatedFormFields = courseFormSchema.safeParse({
     title: title,
@@ -196,10 +205,10 @@ export async function updateCourse(id: number, prevState: any, formData: FormDat
     };
   }
 
-  // Combine validated form data with the generated slug
+  // Combine validated form data with the existing slug
   const courseDataForDb = {
     ...validatedFormFields.data,
-    slug: generatedSlug,
+    slug: slug,
   };
 
   // Optionally, validate the complete object before DB operation (internal check)

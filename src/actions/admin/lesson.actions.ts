@@ -182,14 +182,20 @@ export async function updateLesson(id: number, prevState: any, formData: FormDat
     return { message: 'Error', errors: { _form: ['Invalid lesson ID.'] } };
   }
 
+  // Get the existing lesson to preserve its slug
+  const existingLesson = await getLessonById(id);
+  if (existingLesson.error || !existingLesson.data) {
+    return { message: 'Error', errors: { _form: ['Lesson not found.'] } };
+  }
+
   const title = formData.get('title') as string;
-  const generatedSlug = generateSlug(title);
+  // Use the existing slug instead of generating a new one
+  const slug = existingLesson.data.slug;
 
   const validatedFormFields = lessonFormSchema.safeParse({
     title: title,
     course_id: formData.get('course_id'),
     description: formData.get('description'),
-    // thumbnail_url: formData.get('thumbnail_url'),
     video_url: formData.get('video_url'),
     day_number: formData.get('day_number'),
   });
@@ -201,10 +207,10 @@ export async function updateLesson(id: number, prevState: any, formData: FormDat
     };
   }
 
-  // Now combine with generated slug and validate for DB
+  // Now combine with existing slug and validate for DB
   const validatedDbFields = lessonDbSchema.safeParse({
     ...validatedFormFields.data,
-    slug: generatedSlug,
+    slug: slug,
   });
 
   if (!validatedDbFields.success) {
@@ -215,18 +221,13 @@ export async function updateLesson(id: number, prevState: any, formData: FormDat
   }
 
   try {
-    const existingLessonResult = await db.select({ id: lessons.id, thumbnail_url: lessons.thumbnail_url }).from(lessons).where(eq(lessons.id, id)).limit(1);
-    if (existingLessonResult.length === 0) {
-        return { message: 'Error', errors: { _form: ['Lesson not found.'] } };
-    }
-    
     const courseExists = await db.select({id: courses.id}).from(courses).where(eq(courses.id, validatedDbFields.data.course_id)).limit(1);
     if(courseExists.length === 0) {
         return { message: 'Validation Error', errors: { course_id: ['Selected course does not exist.'] } };
     }
 
     let dataToUpdate = { ...validatedDbFields.data };
-    const currentThumbnailUrl = existingLessonResult[0]?.thumbnail_url;
+    const currentThumbnailUrl = existingLesson.data.thumbnail_url;
 
     if (removeThumbnail) {
       if (currentThumbnailUrl) {
