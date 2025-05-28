@@ -1,27 +1,75 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface CourseCardProps {
   id: string; // Keep id for React key or other non-navigation purposes
   slug: string; // Add slug for navigation
   title: string;
+  subtitle?: string | null;
   description: string;
   thumbnailUrl: string;
+  isActive?: boolean;
+  startDate?: Date | null;
 }
 
-const CourseCard = ({ id, slug, title, description, thumbnailUrl }: CourseCardProps) => {
+const CourseCard = ({ id, slug, title, subtitle, description, thumbnailUrl, isActive = true, startDate = null }: CourseCardProps) => {
+  // Check if course is available based on start date
+  const now = new Date();
+  const isAvailable = isActive && (!startDate || new Date(startDate) <= now);
+  
+  // Format date for display if needed
+  const formattedStartDate = startDate ? new Date(startDate).toLocaleDateString() : null;
+  
   return (
     <div 
-      className="card group h-full flex mb-8 flex-col cursor-pointer transform transition-all duration-300 hover:scale-105"
+      className={`card group h-full flex mb-8 flex-col ${isAvailable ? 'cursor-pointer transform transition-all duration-300 hover:scale-105' : 'cursor-not-allowed'} bg-transparent`}
     >
-      <div className="relative w-full h-full overflow-hidden rounded-lg">
-        <Link href={`/course/${slug}`}>
-        <img 
-          src={thumbnailUrl} 
-          alt={title} 
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy/90 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-        </Link>
+      <div className="relative w-full overflow-hidden rounded-lg bg-transparent border-2 border-white">
+        {isAvailable ? (
+          <Link href={`/course/${slug}`} className="block">
+            <div className="bg-black/70 aspect-[4/3]">
+              <Image 
+                src={thumbnailUrl} 
+                alt="Click here to start your program"
+                width={500}
+                height={375}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                style={{ backgroundColor: 'transparent' }}
+              />
+            </div>
+            <div className="p-4 bg-white/70 flex flex-col flex-grow">
+              <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
+              <p className="text-gray-600 mt-2">{subtitle}</p>
+            </div>
+          </Link>
+        ) : (
+          <div className="block">
+            <div className="bg-black/70 aspect-[4/3]">
+              <Image 
+                src={thumbnailUrl} 
+                alt="Program coming soon"
+                width={500}
+                height={375}
+                className="w-full h-full object-cover opacity-70"
+                style={{ backgroundColor: 'transparent' }}
+              />
+            </div>
+            <div className="p-4 bg-white/70 flex flex-col flex-grow">
+              <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
+              <p className="text-gray-600 mt-2">{description}</p>
+              
+            </div>
+          </div>
+        )}
+        
+        {/* Gray overlay for unavailable courses */}
+        {!isAvailable && (
+          <div className="absolute inset-0 bg-gray-800/70 flex items-center justify-center">
+            <div className="text-center p-4">
+              
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

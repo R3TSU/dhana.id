@@ -2,6 +2,7 @@ import { GetStarted } from "@/components/GetStarted";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
+import Image from 'next/image';
 
 export default async function Home() {
   const { userId } = await auth();
@@ -20,22 +21,25 @@ export default async function Home() {
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center"
           style={{ 
-            backgroundImage: "url('https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80')",
+            backgroundImage: "url('https://dev-dhana-id.creatorcenter.id/bg.jpeg')",
             backgroundBlendMode: "overlay",
           }}
         >
           <div className="absolute inset-0 bg-dark-blue/80 backdrop-blur-sm"></div>
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-              Learn Smarter, Create Better
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8">
-              Access premium educational courses designed to enhance your skills and unleash your creative potential.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+        <div className="container mx-auto px-4 relative z-10 h-full flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center animate-fade-in">
+            <div className="mb-8">
+              <Image 
+                src="https://dev-dhana-id.creatorcenter.id/dhanaLogo.webp"
+                alt="Dhana.id"
+                width={300}
+                height={300}
+                className="mx-auto"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <GetStarted />
             </div>
           </div>

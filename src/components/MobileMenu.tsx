@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, User } from "lucide-react";
+import { BookOpen, Library, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -17,6 +17,12 @@ const MobileMenu = () => {
       path: "/home",
     },
     {
+      icon: Library,
+      label: "Library",
+      path: "/library",
+      disabled: true
+    },
+    {
       icon: User,
       label: "Profile",
       path: "/profile", // This would ideally link to a user profile page
@@ -29,24 +35,40 @@ const MobileMenu = () => {
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-50 bg-gray-800">
-      <nav className="grid grid-cols-2 items-center">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.path}
-        >
+      <nav className="grid grid-cols-3 items-center">
+        {menuItems.map((item) => (item.disabled ? (
             <Button
-            className={cn(
-              "flex flex-col items-center justify-center px-6 py-6 w-full cursor-pointer bg-gray-800 hover:bg-gray-700",
-              isActive(item.path)
-                ? "text-purple-400"
-                : "text-white"
-            )}
-          >
-            <item.icon size={20} />
-            <span className="text-xs mt-1">{item.label}</span>
+              key={item.label} 
+              disabled 
+              className={cn(
+                "flex flex-col items-center justify-center px-6 py-6 w-full cursor-not-allowed bg-gray-800 hover:bg-gray-700",
+                isActive(item.path)
+                  ? "text-purple-400" 
+                  : "text-white"     
+              )}
+            >
+              <item.icon size={20} />
+              <span className="text-xs mt-1">{item.label}</span>
             </Button>
-          </Link>
+          ) : (
+            <Link
+              key={item.label} 
+              href={item.path}
+              passHref 
+            >
+              <Button
+                className={cn(
+                  "flex flex-col items-center justify-center px-6 py-6 w-full cursor-pointer bg-gray-800 hover:bg-gray-700",
+                  isActive(item.path)
+                    ? "text-purple-400"
+                    : "text-white"
+                )}
+              >
+                <item.icon size={20} />
+                <span className="text-xs mt-1">{item.label}</span>
+              </Button>
+            </Link>
+          )
         ))}
       </nav>
     </footer>

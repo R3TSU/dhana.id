@@ -12,7 +12,7 @@ export function GetStarted({ lessonSlug }: GetStartedProps) {
     const { openSignIn } = useClerk();
     return (
         <Button 
-            className="btn-secondary text-lg px-8 py-6"
+            className="btn-secondary bg-purple-500/70 text-lg px-8 py-6"
             onClick={() => {
         if (lessonSlug) {
           sessionStorage.setItem('fromLessonSlug', lessonSlug);

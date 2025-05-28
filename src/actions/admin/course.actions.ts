@@ -13,16 +13,26 @@ import { generateSlug } from '@/lib/utils';
 // Zod schema for validating incoming form data (slug is auto-generated)
 const courseFormSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
+  subtitle: z.string().optional(),
   description: z.string().optional(),
   thumbnail_url: z.string().url('Invalid URL format').nullable().optional(),
+  is_active: z.preprocess(
+    // Convert checkbox input value to boolean
+    (val) => val === 'on' || val === true || val === 'true',
+    z.boolean().default(true)
+  ),
+  start_date: z.string().optional().nullable().transform(val => val && val !== '' ? new Date(val) : null),
 });
 
 // Zod schema for the full course object (including auto-generated slug)
 const courseDbSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   slug: z.string().min(1, 'Slug cannot be empty after generation').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Generated slug is invalid'),
+  subtitle: z.string().optional(),
   description: z.string().optional(),
-  thumbnail_url: z.string().url('Invalid URL format').nullable().optional()
+  thumbnail_url: z.string().url('Invalid URL format').nullable().optional(),
+  is_active: z.boolean().default(true),
+  start_date: z.date().nullable().optional()
 });
 
 
@@ -73,8 +83,11 @@ export async function createCourse(prevState: any, formData: FormData) {
 
   const validatedFormFields = courseFormSchema.safeParse({
     title: title,
+    subtitle: formData.get('subtitle'),
     description: formData.get('description'),
     thumbnail_url: uploadedThumbnailUrl, // Corrected: Use the R2 URL or null
+    is_active: formData.get('is_active'),
+    start_date: formData.get('start_date'),
   });
 
   if (!validatedFormFields.success) {
@@ -169,8 +182,11 @@ export async function updateCourse(id: number, prevState: any, formData: FormDat
 
   const validatedFormFields = courseFormSchema.safeParse({
     title: title,
+    subtitle: formData.get('subtitle'),
     description: formData.get('description'),
     thumbnail_url: newThumbnailUrl, // Corrected: Use the derived R2 URL, existing URL, or null
+    is_active: formData.get('is_active'),
+    start_date: formData.get('start_date'),
   });
 
   if (!validatedFormFields.success) {
@@ -267,9 +283,12 @@ import { and } from 'drizzle-orm'; // Added for potential future complex queries
 export type PublicCourse = {
   id: string;
   title: string;
+  subtitle: string | null;
   description: string | null;
   thumbnailUrl: string | null;
   slug: string;
+  isActive: boolean;
+  startDate: Date | null;
 };
 
 export async function getPublicCourses(): Promise<{ data: PublicCourse[]; error: string | null }> {
@@ -278,18 +297,24 @@ export async function getPublicCourses(): Promise<{ data: PublicCourse[]; error:
       .select({
         id: courses.id,
         title: courses.title,
+        subtitle: courses.subtitle,
         description: courses.description,
         thumbnailUrl: courses.thumbnail_url, // Alias to match CourseCard prop
         slug: courses.slug,
+        isActive: courses.is_active,
+        startDate: courses.start_date,
       })
       .from(courses)
-      .orderBy(desc(courses.created_at)); // Show newest first
+      .orderBy((courses.created_at)) // Show newest first
+      .where(eq(courses.is_active, true)); // Only return active courses
 
     const processedData: PublicCourse[] = courseData.map(course => ({
       ...course,
       id: String(course.id), // Ensure id is a string
       description: course.description ?? null,
       thumbnailUrl: course.thumbnailUrl ?? null,
+      isActive: course.isActive,
+      startDate: course.startDate,
     }));
 
     return { data: processedData, error: null };

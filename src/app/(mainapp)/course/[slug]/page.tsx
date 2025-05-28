@@ -5,6 +5,7 @@ import VideoCard from "@/components/course/VideoCard";
 import { getCourseWithLessonsBySlug, type CourseWithLessons, type PublicLessonForCoursePage } from "@/actions/admin/course.actions"; // Adjust path if needed
 import { enrollInCourse, getUserEnrollmentForCourse, hasLessonAccessOverride } from "@/actions/enrollment.actions"; // Import new actions
 import PageHeaderWithBackLink from '@/components/layout/PageHeaderWithBackLink'; 
+import BackgroundOverlay from "@/components/layout/BackgroundOverlay";
 
 export default async function CoursePage({
   params,
@@ -100,38 +101,39 @@ export default async function CoursePage({
 
   return (
     <div className="flex flex-col min-h-screen bg-purple-800 text-white">
-      {/* <Navbar isScrolled={isScrolled} /> */}
-      <PageHeaderWithBackLink href="/home" linkText="Back to Courses" />
-
-      <main className="flex-1 p-4 overflow-y-auto">
-        <div className="container mx-auto px-4">
-          {/* Course Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">{course.title}</h1>
-            <p className="text-lg text-white">{course.description ?? 'No description available.'}</p>
-          </div>
-          
-          {/* Lessons Grid */}
-          <div className="mb-16">
-            {enrollmentError && <p className='text-sm text-red-500 mb-4'>{enrollmentError}</p>}
-            {processedLessonsWithOverrides && processedLessonsWithOverrides.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {processedLessonsWithOverrides.map((lesson) => (
-                  <VideoCard
-                    key={lesson.id}
-                    id={String(lesson.id)} // Ensure id is string for VideoCard prop
-                    lessonSlug={lesson.slug}
-                    title={lesson.title}
-                    thumbnailUrl={lesson.thumbnailUrl ? lesson.thumbnailUrl : "https://placehold.co/400x200/slate/white?text=No+Image"}
-                    availabilityStatus={lesson.availabilityStatus as 'available' | 'coming_soon'} // Cast because filter removes 'hidden'
-                    dayNumber={lesson.dayNumber}
-                    daysSinceEnrollment={daysSinceEnrollment} // Pass for potential display in VideoCard
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-white text-lg opacity-70">No lessons available for this course yet. Check back soon!</p>
-            )}
+      <main className="flex-grow relative">
+        <BackgroundOverlay />
+        <div className="relative z-10">
+          <PageHeaderWithBackLink href="/home" linkText="Back to Courses" />
+          <div className="container mx-auto px-4">
+            {/* Course Header */}
+            <div className="bg-white/90 rounded-lg p-6 mb-8 shadow-md h-full flex flex-col">
+              <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
+              <p className="text-lg text-black whitespace-pre-line">{course.description ?? 'No description available.'}</p>
+            </div>
+            
+            {/* Lessons Grid */}
+            <div className="mb-16">
+              {enrollmentError && <p className='text-sm text-red-500 mb-4'>{enrollmentError}</p>}
+              {processedLessonsWithOverrides && processedLessonsWithOverrides.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {processedLessonsWithOverrides.map((lesson) => (
+                    <VideoCard
+                      key={lesson.id}
+                      id={String(lesson.id)} // Ensure id is string for VideoCard prop
+                      lessonSlug={lesson.slug}
+                      title={lesson.title}
+                      thumbnailUrl={lesson.thumbnailUrl ? lesson.thumbnailUrl : "https://placehold.co/400x200/slate/white?text=No+Image"}
+                      availabilityStatus={lesson.availabilityStatus as 'available' | 'coming_soon'} // Cast because filter removes 'hidden'
+                      dayNumber={lesson.dayNumber}
+                      daysSinceEnrollment={daysSinceEnrollment} // Pass for potential display in VideoCard
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white text-lg opacity-70">No lessons available for this course yet. Check back soon!</p>
+              )}
+            </div>
           </div>
         </div>
       </main>
