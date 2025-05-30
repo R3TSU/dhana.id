@@ -12,6 +12,7 @@ interface InitialValues {
   course_id?: number;
   title?: string;
   description?: string;
+  workbook?: string;
   video_url?: string;
   thumbnail_url?: string | null;
   day_number?: number | null;
@@ -34,6 +35,7 @@ interface FormState {
     course_id?: string[];
     title?: string[];
     description?: string[];
+    workbook?: string[];
     video_url?: string[];
     thumbnail_url?: string[];
     thumbnailFile?: string[];
@@ -189,6 +191,26 @@ export function LessonForm({
         />
         {state.errors?.description && (
           <p className="mt-1 text-xs text-red-500">{state.errors.description.join(', ')}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="workbook" className="block text-sm font-medium text-gray-700 mb-1">
+          Workbook / Reflection Questions (Optional)
+        </label>
+        <textarea
+          id="workbook"
+          name="workbook"
+          defaultValue={initialData?.workbook || initialValues?.workbook || ''}
+          rows={5}
+          placeholder="Enter reflection questions here. Each line will be displayed as a separate question."
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+        />
+        <p className="text-sm text-muted-foreground mt-1">
+          These questions will be shown alongside the video for students to reflect on and answer in their notes.
+        </p>
+        {state.errors?.workbook && (
+          <p className="mt-1 text-xs text-red-500">{state.errors.workbook.join(', ')}</p>
         )}
       </div>
 

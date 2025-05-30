@@ -51,6 +51,7 @@ export const lessons = pgTable('lessons', {
     slug: text('slug').notNull().unique(),
     title: text('title').notNull(),
     description: text('description'),
+    workbook: text('workbook'), // Added workbook field for reflection questions
     thumbnail_url: text('thumbnail_url'),
     video_url: text('video_url').notNull(),
     day_number: integer('day_number').notNull().default(1),

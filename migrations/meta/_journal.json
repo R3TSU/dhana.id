@@ -64,6 +64,13 @@
       "when": 1748429969781,
       "tag": "0008_faithful_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1748573844178,
+      "tag": "0009_sudden_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

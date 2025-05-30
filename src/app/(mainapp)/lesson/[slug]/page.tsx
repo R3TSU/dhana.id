@@ -4,6 +4,7 @@ import { ArrowLeft, AlertTriangle } from "lucide-react"; // Added AlertTriangle
 import Link from 'next/link';
 import Notes from "@/components/lesson/notes"; // Assuming this path is correct relative to new location
 import ShareButton from "@/components/lesson/ShareButton"; // Assuming this path is correct
+import WorkbookQuestions from "@/components/lesson/WorkbookQuestions"; // Added workbook component
 import VideoPlayer from "./VideoPlayer"; // Will now be in the same [slug] directory
 import { getLessonDetailsBySlug } from "@/actions/admin/lesson.actions"; // Import new action
 import { hasLessonAccessOverride, getUserEnrollmentForCourse } from "@/actions/enrollment.actions";
@@ -141,6 +142,9 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
                 {/* Assuming ShareButton can take slug or id. If it needs numeric ID, use lessonData.id */}
                 <ShareButton lessonSlug={lessonData.slug} lessonTitle={lessonData.title} /> 
               </div>
+
+              {/* Workbook Questions */}
+              <WorkbookQuestions workbook={lessonData.workbook} />                
             </div>
             
             {/* Notes Section */}
