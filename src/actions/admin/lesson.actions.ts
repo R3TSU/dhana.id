@@ -17,6 +17,7 @@ const lessonFormSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   course_id: z.coerce.number().int().positive('Course ID must be a positive number'),
   description: z.string().optional(),
+  workbook: z.string().optional(), // Added workbook field for reflection questions
   thumbnail_url: z.string().url('Invalid URL format').optional().or(z.literal('')), // Allow empty string or valid URL
   video_url: z.string().url('Video URL must be a valid URL').min(5, 'Video URL is required'),
   day_number: z.coerce.number().int().min(1, 'Day number must be at least 1'),
@@ -108,6 +109,7 @@ export async function createLesson(prevState: any, formData: FormData) {
     title: title,
     course_id: formData.get('course_id'),
     description: formData.get('description'),
+    workbook: formData.get('workbook'), // Added workbook field
     // thumbnail_url: formData.get('thumbnail_url'),
     video_url: formData.get('video_url'),
     day_number: formData.get('day_number'),
@@ -196,6 +198,7 @@ export async function updateLesson(id: number, prevState: any, formData: FormDat
     title: title,
     course_id: formData.get('course_id'),
     description: formData.get('description'),
+    workbook: formData.get('workbook'), // Added workbook field
     video_url: formData.get('video_url'),
     day_number: formData.get('day_number'),
   });
