@@ -1,5 +1,6 @@
 import MobileMenu from '@/components/MobileMenu';
 import React from 'react';
+import GoogleAnalytics from '@/components/AmplitudeAnalytics';
 
 export default function MainAppLayout({
   children,
@@ -8,8 +9,10 @@ export default function MainAppLayout({
 }>) {
   return (
     <>
-      {children}
-      <MobileMenu />
-    </>
+      <GoogleAnalytics>
+        {children}
+        <MobileMenu />
+      </GoogleAnalytics>
+    </>  
   );
 }

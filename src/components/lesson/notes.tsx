@@ -2,19 +2,27 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button"; // Added Button
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getLessonNote, upsertLessonNote } from "@/actions/lessonNotes.actions";
+import { useAnalytics } from "@/components/AmplitudeAnalytics";
 
 interface NotesProps {
   lessonId: number;
+  lessonTitle?: string;
+  hasWorkbook?: boolean;
 }
 
-export default function Notes({ lessonId }: NotesProps) {
+export default function Notes({ lessonId, lessonTitle = "Lesson", hasWorkbook = false }: NotesProps) {
   const [noteContent, setNoteContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { trackEvent } = useAnalytics();
+  
+  // Track if this is the first save (note creation) or an update
+  const initialNoteRef = useRef<string | null>(null);
+  const lastSaveTimeRef = useRef<Date | null>(null);
 
   // Fetch initial note
   useEffect(() => {
@@ -31,6 +39,10 @@ export default function Notes({ lessonId }: NotesProps) {
           setStatusMessage("Error loading notes.");
         } else if (note) {
           setNoteContent(note.content || '');
+          initialNoteRef.current = note.content || '';
+        } else {
+          // No existing note found
+          initialNoteRef.current = null;
         }
       } catch (e) {
         setError("An unexpected error occurred while fetching notes.");
@@ -83,6 +95,33 @@ export default function Notes({ lessonId }: NotesProps) {
         setStatusMessage("Error saving notes.");
       } else {
         setStatusMessage("Notes saved!");
+        
+        // Track note creation or update event
+        const isFirstSave = initialNoteRef.current === null;
+        const timeSinceLastUpdate = lastSaveTimeRef.current ? 
+          (new Date().getTime() - lastSaveTimeRef.current.getTime()) / 1000 : 0;
+        
+        if (isFirstSave) {
+          // This is a new note being created
+          trackEvent('note_created', {
+            lesson_id: lessonId,
+            lesson_title: lessonTitle,
+            note_length: contentToSave.length,
+            has_workbook: hasWorkbook
+          });
+          initialNoteRef.current = contentToSave; // No longer a first save
+        } else {
+          // This is an update to an existing note
+          trackEvent('note_updated', {
+            lesson_id: lessonId,
+            lesson_title: lessonTitle,
+            note_length: contentToSave.length,
+            time_since_last_update: timeSinceLastUpdate,
+            has_workbook: hasWorkbook
+          });
+        }
+        
+        lastSaveTimeRef.current = new Date();
         // Optionally update noteContent from returned note if backend modifies it
         // if (note && note.content) setNoteContent(note.content); 
       }
