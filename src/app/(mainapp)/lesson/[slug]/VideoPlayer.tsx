@@ -8,7 +8,7 @@ import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/l
 // import { PlyrLayout, plyrLayoutIcons } from '@vidstack/react/player/layouts/plyr';
 import './video-player-styles.css';
 import { useEffect, useState, useRef } from 'react';
-import { useAnalytics } from '@/components/AmplitudeAnalytics';
+import { useAnalytics } from '@/components/AnalyticsContext';
 
 interface VideoPlayerProps {
   videoUrl: string;

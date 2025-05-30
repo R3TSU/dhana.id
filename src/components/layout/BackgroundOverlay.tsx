@@ -6,7 +6,7 @@ interface BackgroundOverlayProps {
 }
 
 export default function BackgroundOverlay({ 
-  imagePath = 'https://dev-dhana-id.creatorcenter.id/bg.jpeg',
+  imagePath = 'https://dev-dhana-id.creatorcenter.id/bg.webp',
   children 
 }: BackgroundOverlayProps) {
   return (

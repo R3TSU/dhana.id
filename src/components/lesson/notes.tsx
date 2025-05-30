@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button"; // Added Button
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getLessonNote, upsertLessonNote } from "@/actions/lessonNotes.actions";
-import { useAnalytics } from "@/components/AmplitudeAnalytics";
+import { useAnalytics } from "@/components/AnalyticsContext";
 
 interface NotesProps {
   lessonId: number;
