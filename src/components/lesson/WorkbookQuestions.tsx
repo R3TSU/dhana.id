@@ -1,15 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Book, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAnalytics } from '@/components/AnalyticsContext';
 
 interface WorkbookQuestionsProps {
   workbook: string | null;
+  lessonId?: number | string;
+  lessonTitle?: string;
 }
 
-export default function WorkbookQuestions({ workbook }: WorkbookQuestionsProps) {
+export default function WorkbookQuestions({ workbook, lessonId, lessonTitle = "Lesson" }: WorkbookQuestionsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { trackEvent } = useAnalytics();
+  
+  // Track when the workbook is first viewed
+  useEffect(() => {
+    if (workbook && workbook.trim() !== '' && lessonId) {
+      const questionCount = workbook.split('\n').filter(q => q.trim() !== '').length;
+      
+      trackEvent('workbook_viewed', {
+        lesson_id: lessonId,
+        lesson_title: lessonTitle,
+        question_count: questionCount
+      });
+    }
+  }, [workbook, lessonId, lessonTitle, trackEvent]);
 
   // If no workbook content, don't render anything
   if (!workbook || workbook.trim() === '') {
@@ -38,7 +55,21 @@ export default function WorkbookQuestions({ workbook }: WorkbookQuestionsProps) 
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => {
+            const newExpandedState = !isExpanded;
+            setIsExpanded(newExpandedState);
+            
+            // Track when user expands the workbook
+            if (newExpandedState && lessonId) {
+              const questionCount = workbook?.split('\n').filter(q => q.trim() !== '').length || 0;
+              
+              trackEvent('workbook_expanded', {
+                lesson_id: lessonId,
+                lesson_title: lessonTitle,
+                question_count: questionCount
+              });
+            }
+          }}
           className="text-amber-700 hover:text-amber-900 hover:bg-amber-100"
         >
           {isExpanded ? (

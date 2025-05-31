@@ -123,7 +123,12 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
 
           {/* Video Player */}
           <div className="mb-8">
-            <VideoPlayer videoUrl={lessonData.video_url || ''} title={lessonData.title} />
+            <VideoPlayer 
+              videoUrl={lessonData.video_url || ''} 
+              title={lessonData.title} 
+              lessonId={lessonData.id} 
+              courseId={lessonData.course_id} 
+            />
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -144,11 +149,19 @@ export default async function LessonPage({ params: paramsPromise }: { params: Pr
               </div>
 
               {/* Workbook Questions */}
-              <WorkbookQuestions workbook={lessonData.workbook} />                
+              <WorkbookQuestions 
+                workbook={lessonData.workbook} 
+                lessonId={lessonData.id}
+                lessonTitle={lessonData.title}
+              />                
             </div>
             
             {/* Notes Section */}
-            <Notes lessonId={lessonData.id} /> 
+            <Notes 
+              lessonId={lessonData.id} 
+              lessonTitle={lessonData.title}
+              hasWorkbook={!!lessonData.workbook && lessonData.workbook.trim() !== ''}
+            /> 
           </div>
         </div>
       </div>

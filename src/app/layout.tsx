@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReactQueryClientProvider } from '@/components/ReactQueryClientProvider';
 import { Toaster } from "@/components/ui/sonner"
+import { GoogleAnalytics } from "@next/third-parties/google"
+import AnalyticsProvider from "@/components/AnalyticsContext"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,12 +33,16 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <ReactQueryClientProvider>
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {children}
-        </body>
-      </html>
-      <Toaster position="top-center" />
+        <AnalyticsProvider>
+          <html lang="en">
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+              {children}
+              {/* Add Google Analytics */}
+              <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS as string} />
+            </body>
+          </html>
+          <Toaster position="top-center" />
+        </AnalyticsProvider>
       </ReactQueryClientProvider>
     </ClerkProvider>
   )
