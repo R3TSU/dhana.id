@@ -1,4 +1,5 @@
 import MobileMenu from '@/components/MobileMenu';
+import { Analytics } from '@vercel/analytics/next';
 import React from 'react';
 
 export default function MainAppLayout({
@@ -10,6 +11,7 @@ export default function MainAppLayout({
     <>
       {children}
       <MobileMenu />
+      <Analytics />
     </>
   );
 }
