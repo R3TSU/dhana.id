@@ -49,41 +49,46 @@ export default async function CoursePage({
         daysSinceEnrollment = enrollmentCheck.success ? 1 : 0;
         if (!enrollmentCheck.success) enrollmentError = "Could not fetch enrollment details. Content may be restricted.";
       } else if (enrollmentDate) {
-        // Convert all times to UTC+7 (7 hours ahead of UTC)
+        // Get current time in UTC
         const now = new Date();
-        // Add 7 hours to current time to get UTC+7
+        
+        // Convert current time to UTC+7 by adding 7 hours
         const nowUTC7 = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-        const todayUTC7 = Date.UTC(
+        
+        // Create a date object for the start of the day in UTC+7
+        const todayUTC7 = new Date(Date.UTC(
           nowUTC7.getUTCFullYear(),
           nowUTC7.getUTCMonth(),
           nowUTC7.getUTCDate()
-        );
+        ));
 
-        console.log('nowUTC7');
-        console.log(nowUTC7);
-        console.log(todayUTC7);
-        
         // Convert enrollment date to UTC+7
         const enrollDate = new Date(enrollmentDate);
-        const enrollDateUTC7 = Date.UTC(
-          enrollDate.getUTCFullYear(),
-          enrollDate.getUTCMonth(),
-          enrollDate.getUTCDate()
-        );
+        const enrollDateUTC7 = new Date(enrollDate.getTime() + (7 * 60 * 60 * 1000));
         
-        console.log('enrollDate');
-        console.log(enrollDate);
-        console.log(enrollDateUTC7);
-
-        // Calculate difference in days at UTC+7
-        const diffTime = Math.abs(todayUTC7 - enrollDateUTC7);
-        daysSinceEnrollment = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 because enrollment day is Day 1
+        // Set both dates to start of their respective days in UTC+7
+        const enrollDateStart = new Date(Date.UTC(
+          enrollDateUTC7.getUTCFullYear(),
+          enrollDateUTC7.getUTCMonth(),
+          enrollDateUTC7.getUTCDate()
+        ));
+        
+        // Calculate difference in days
+        const diffTime = todayUTC7.getTime() - enrollDateStart.getTime();
+        daysSinceEnrollment = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1);
+        
+        console.log('now (UTC):', now.toISOString());
+        console.log('nowUTC7:', nowUTC7.toISOString());
+        console.log('todayUTC7 (start of day UTC+7):', todayUTC7.toISOString());
+        console.log('enrollDate (UTC):', enrollDate.toISOString());
+        console.log('enrollDateUTC7:', enrollDateUTC7.toISOString());
+        console.log('enrollDateStart (start of day UTC+7):', enrollDateStart.toISOString());
       } else {
         // Not enrolled or no enrollment date found, treat as not started for dripping
         daysSinceEnrollment = 0; 
       }
 
-      console.log(daysSinceEnrollment);
+      console.log('daysSinceEnrollment', daysSinceEnrollment);
     }
   }
 
