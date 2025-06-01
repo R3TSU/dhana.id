@@ -1,7 +1,6 @@
 // src/app/(mainapp)/lesson/[slug]/page.tsx
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, AlertTriangle } from "lucide-react"; // Added AlertTriangle
-import Link from "next/link";
+import { AlertTriangle } from "lucide-react"; // Added AlertTriangle
 import Notes from "@/components/lesson/notes"; // Assuming this path is correct relative to new location
 import ShareButton from "@/components/lesson/ShareButton"; // Assuming this path is correct
 import WorkbookQuestions from "@/components/lesson/WorkbookQuestions"; // Added workbook component
@@ -14,6 +13,7 @@ import {
 import { Metadata } from "next"; // For dynamic metadata
 import PageHeaderWithBackLink from "@/components/layout/PageHeaderWithBackLink";
 import BackgroundOverlay from "@/components/layout/BackgroundOverlay";
+import { ProgressBarLink } from "@/components/progress-bar";
 
 // Define props for the page
 interface LessonPageProps {
@@ -35,7 +35,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${lessonData.title} | Dhana.id`,
+    title: `${lessonData.title}`,
     description:
       lessonData.description?.substring(0, 160) ||
       `Watch the lesson: ${lessonData.title}`,
@@ -124,11 +124,11 @@ export default async function LessonPage({
               ? "We couldn't find the lesson you're looking for."
               : "You do not have access to this lesson yet, or it's not available.")}
         </p>
-        <Link href="/home">
+        <ProgressBarLink href="/home">
           <Button className="bg-coral hover:bg-coral-dark text-white">
             Go to Home
           </Button>
-        </Link>
+        </ProgressBarLink>
       </div>
     );
   }

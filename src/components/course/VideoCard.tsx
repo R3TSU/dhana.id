@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
-import Link from "next/link";
+import { ProgressBarLink } from "@/components/progress-bar";
 import { cn } from "@/lib/utils";
 
 interface VideoCardProps {
@@ -42,13 +42,13 @@ const VideoCard = ({
           )}
         />
         {isAvailable ? (
-          <Link href={`/lesson/${lessonSlug}`} className="absolute inset-0">
+          <ProgressBarLink href={`/lesson/${lessonSlug}`} className="absolute inset-0">
             <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="w-12 h-12 bg-coral rounded-full flex items-center justify-center">
                 <Play size={20} className="text-white ml-1" />
               </div>
             </div>
-          </Link>
+          </ProgressBarLink>
         ) : (
           // Coming Soon state (availabilityStatus === 'coming_soon')
           <div className="absolute inset-0 bg-slate-700/70 flex flex-col items-center justify-center p-4 text-center">
@@ -69,14 +69,14 @@ const VideoCard = ({
             {title}
           </p> */}
         {isAvailable ? (
-          <Link href={`/lesson/${lessonSlug}`}>
+          <ProgressBarLink href={`/lesson/${lessonSlug}`}>
             <Button
               className="w-full bg-purple-500/70 text-white transition-colors mt-auto"
               // Link wrapper handles navigation
             >
               Watch Now <Play size={16} className="ml-2" />
             </Button>
-          </Link>
+          </ProgressBarLink>
         ) : (
           // Coming Soon state
           <Button

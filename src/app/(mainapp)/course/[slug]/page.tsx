@@ -1,6 +1,4 @@
-import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import VideoCard from "@/components/course/VideoCard";
 import {
   getCourseWithLessonsBySlug,
@@ -14,6 +12,7 @@ import {
 } from "@/actions/enrollment.actions"; // Import new actions
 import PageHeaderWithBackLink from "@/components/layout/PageHeaderWithBackLink";
 import BackgroundOverlay from "@/components/layout/BackgroundOverlay";
+import { ProgressBarLink } from "@/components/progress-bar";
 
 export default async function CoursePage({
   params,
@@ -35,11 +34,11 @@ export default async function CoursePage({
           {error ||
             "The course you're looking for doesn't exist or an error occurred."}
         </p>
-        <Link href="/home">
+        <ProgressBarLink href="/home">
           <Button variant="outline" className="mt-4">
             Go Back to Courses
           </Button>
-        </Link>
+        </ProgressBarLink>
       </div>
     );
   }

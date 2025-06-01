@@ -34,7 +34,7 @@ export default async function Home() {
               <div className="mb-8">
                 <Image
                   src="https://dev-dhana-id.creatorcenter.id/dhanaLogo.webp"
-                  alt="Dhana.id"
+                  alt="dhanavinya.id"
                   width={300}
                   height={300}
                   className="mx-auto"

@@ -52,7 +52,7 @@ export default function ShareButton({
     if (navigator.share && shareUrl) {
       try {
         await navigator.share({
-          title: lessonTitle || "Dhana.id Lesson",
+          title: lessonTitle || "Dhanavinya.id Audio Program",
           text: shareQuote,
           url: shareUrl,
         });

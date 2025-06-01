@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ProgressBarLink } from "@/components/progress-bar";
 
 interface CourseCardProps {
   id: string; // Keep id for React key or other non-navigation purposes
@@ -37,7 +38,7 @@ const CourseCard = ({
     >
       <div className="relative w-full overflow-hidden rounded-lg bg-transparent border-2 border-white">
         {isAvailable ? (
-          <Link href={`/course/${slug}`} className="block">
+          <ProgressBarLink href={`/course/${slug}`} className="block">
             <div className="bg-black/70 aspect-[4/3]">
               <Image
                 src={thumbnailUrl}
@@ -52,7 +53,7 @@ const CourseCard = ({
               <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
               <p className="text-gray-600 mt-2">{subtitle}</p>
             </div>
-          </Link>
+          </ProgressBarLink>
         ) : (
           <div className="block">
             <div className="bg-black/70 aspect-[4/3]">

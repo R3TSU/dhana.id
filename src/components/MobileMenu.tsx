@@ -3,13 +3,13 @@
 import { BookOpen, Library, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
 import { Button } from "./ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ProgressBarLink } from "./progress-bar";
 
 const MobileMenu = () => {
   const router = useRouter();
@@ -62,7 +62,7 @@ const MobileMenu = () => {
               </PopoverContent>
             </Popover>
           ) : (
-            <Link key={item.label} href={item.path} passHref>
+            <ProgressBarLink key={item.label} href={item.path}>
               <Button
                 className={cn(
                   "flex flex-col items-center justify-center px-6 py-6 w-full cursor-pointer bg-gray-800 hover:bg-gray-700",
@@ -72,7 +72,7 @@ const MobileMenu = () => {
                 <item.icon size={20} />
                 <span className="text-xs mt-1">{item.label}</span>
               </Button>
-            </Link>
+            </ProgressBarLink>
           ),
         )}
       </nav>

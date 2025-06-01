@@ -6,6 +6,7 @@ import { ReactQueryClientProvider } from "@/components/ReactQueryClientProvider"
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import AnalyticsProvider from "@/components/AnalyticsContext";
+import { ProgressBar } from "@/components/progress-bar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +36,15 @@ export default function RootLayout({
       <ReactQueryClientProvider>
         <AnalyticsProvider>
           <html lang="en">
+            <head>
+              <link rel="icon" href="/favicon.ico" sizes="any" />
+            </head>
             <body
               className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-              {children}
+              <ProgressBar className="fixed top-0 h-1 bg-sky-500 z-51">
+                {children}
+              </ProgressBar>
               <Toaster position="top-center" />
               {/* Add Google Analytics */}
               {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS && (
