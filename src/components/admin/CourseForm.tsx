@@ -1,4 +1,8 @@
 // src/components/admin/CourseForm.tsx
+
+function isValidBlobUrl(url: string): boolean {
+  return /^blob:/.test(url);
+}
 "use client";
 
 import { useActionState, useState, useEffect, useRef } from "react";
@@ -208,7 +212,7 @@ export function CourseForm({
         {removeThumbnailFlag && (
           <input type="hidden" name="removeThumbnail" value="true" />
         )}
-        {previewUrl && (
+        {previewUrl && isValidBlobUrl(previewUrl) && (
           <div className="mt-4">
             <img
               src={previewUrl}
