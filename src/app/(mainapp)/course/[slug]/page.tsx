@@ -49,17 +49,41 @@ export default async function CoursePage({
         daysSinceEnrollment = enrollmentCheck.success ? 1 : 0;
         if (!enrollmentCheck.success) enrollmentError = "Could not fetch enrollment details. Content may be restricted.";
       } else if (enrollmentDate) {
-        const today = new Date();
+        // Convert all times to UTC+7 (7 hours ahead of UTC)
+        const now = new Date();
+        // Add 7 hours to current time to get UTC+7
+        const nowUTC7 = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+        const todayUTC7 = Date.UTC(
+          nowUTC7.getUTCFullYear(),
+          nowUTC7.getUTCMonth(),
+          nowUTC7.getUTCDate()
+        );
+
+        console.log('nowUTC7');
+        console.log(nowUTC7);
+        console.log(todayUTC7);
+        
+        // Convert enrollment date to UTC+7
         const enrollDate = new Date(enrollmentDate);
-        // Normalize to start of day for comparison
-        today.setHours(0, 0, 0, 0);
-        enrollDate.setHours(0, 0, 0, 0);
-        const diffTime = Math.abs(today.getTime() - enrollDate.getTime());
-        daysSinceEnrollment = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Day of enrollment is Day 1
+        const enrollDateUTC7 = Date.UTC(
+          enrollDate.getUTCFullYear(),
+          enrollDate.getUTCMonth(),
+          enrollDate.getUTCDate()
+        );
+        
+        console.log('enrollDate');
+        console.log(enrollDate);
+        console.log(enrollDateUTC7);
+
+        // Calculate difference in days at UTC+7
+        const diffTime = Math.abs(todayUTC7 - enrollDateUTC7);
+        daysSinceEnrollment = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 because enrollment day is Day 1
       } else {
         // Not enrolled or no enrollment date found, treat as not started for dripping
         daysSinceEnrollment = 0; 
       }
+
+      console.log(daysSinceEnrollment);
     }
   }
 
