@@ -1,9 +1,10 @@
 // src/components/admin/CourseForm.tsx
 
+"use client";
+
 function isValidBlobUrl(url: string): boolean {
   return /^blob:/.test(url);
 }
-"use client";
 
 import { useActionState, useState, useEffect, useRef } from "react";
 import { SubmitButton } from "./SubmitButton";
