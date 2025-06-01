@@ -66,7 +66,7 @@ const VideoCard = ({
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
+        <h2 className="text-xl font-semibold text-purple-800 h-14 line-clamp-2">{title}</h2>
         {/* short desc if needed */}
         {/* <p className="text-gray-600 mt-2">
             {title}
