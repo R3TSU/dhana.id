@@ -20,10 +20,23 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Dhanavinya.id",
-    default: "Dhanavinya.id",
+    template: "%s | Dhanavinya",
+    default: "Dhanavinya",
   },
   description: "From success to significance",
+  openGraph: {
+    title: "Dhanavinya",
+    description: "From success to significance",
+    url: "https://dhanavinya.id",
+    siteName: "Dhanavinya",
+    images: [
+      {
+        url: "https://dev-dhana-id.creatorcenter.id/dhanaLogo.webp", // Must be an absolute URL
+        width: 512,
+        height: 512,
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
