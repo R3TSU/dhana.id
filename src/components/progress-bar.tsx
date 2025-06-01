@@ -20,7 +20,7 @@ import {
 } from "react";
 
 const ProgressBarContext = createContext<ReturnType<typeof useProgress> | null>(
-  null
+  null,
 );
 
 export function useProgressBar() {
@@ -33,9 +33,15 @@ export function useProgressBar() {
   return progress;
 }
 
-export function ProgressBar({ className, children }: { className: string, children: ReactNode }) {
-  let progress = useProgress(); 
-  let width = useMotionTemplate`${progress.value}%`; 
+export function ProgressBar({
+  className,
+  children,
+}: {
+  className: string;
+  children: ReactNode;
+}) {
+  let progress = useProgress();
+  let width = useMotionTemplate`${progress.value}%`;
 
   return (
     <ProgressBarContext.Provider value={progress}>
@@ -59,7 +65,7 @@ export function ProgressBarLink({
   children,
   ...rest
 }: ComponentProps<typeof Link>) {
-  let progress = useProgressBar(); 
+  let progress = useProgressBar();
   let router = useRouter();
 
   return (
@@ -67,11 +73,11 @@ export function ProgressBarLink({
       href={href}
       onClick={(e) => {
         e.preventDefault();
-        progress.start(); 
+        progress.start();
 
         startTransition(() => {
           router.push(href.toString());
-          progress.done(); 
+          progress.done();
         });
       }}
       {...rest}
@@ -113,7 +119,7 @@ function useProgress() {
 
       value.set(Math.min(current + diff, 99));
     },
-    state === "in-progress" ? 750 : null
+    state === "in-progress" ? 750 : null,
   );
 
   useEffect(() => {
@@ -140,7 +146,7 @@ function useProgress() {
 
   function done() {
     setState((state) =>
-      state === "initial" || state === "in-progress" ? "completing" : state
+      state === "initial" || state === "in-progress" ? "completing" : state,
     );
   }
 

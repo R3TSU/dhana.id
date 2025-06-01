@@ -10,6 +10,9 @@ interface WorkbookQuestionsProps {
   lessonId?: number | string;
   lessonTitle?: string;
 }
+const getQuestionCount = (workbook: string | null): number => {
+  return workbook?.split("\n").filter((q) => q.trim() !== "").length || 0;
+};
 
 export default function WorkbookQuestions({
   workbook,
@@ -22,9 +25,7 @@ export default function WorkbookQuestions({
   // Track when the workbook is first viewed
   useEffect(() => {
     if (workbook && workbook.trim() !== "" && lessonId) {
-      const questionCount = workbook
-        .split("\n")
-        .filter((q) => q.trim() !== "").length;
+      const questionCount = getQuestionCount(workbook);
 
       trackEvent("workbook_viewed", {
         lesson_id: lessonId,
@@ -67,9 +68,7 @@ export default function WorkbookQuestions({
 
             // Track when user expands the workbook
             if (newExpandedState && lessonId) {
-              const questionCount =
-                workbook?.split("\n").filter((q) => q.trim() !== "").length ||
-                0;
+              const questionCount = getQuestionCount(workbook);
 
               trackEvent("workbook_expanded", {
                 lesson_id: lessonId,

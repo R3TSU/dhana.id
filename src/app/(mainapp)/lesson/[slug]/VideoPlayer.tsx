@@ -139,6 +139,15 @@ export default function VideoPlayer({
   // Handle play/pause events
   const handlePlay = () => {
     setIsPlaying(true);
+    if (currentTime < 1) {
+      progressMarkers.current = {
+        started: false,
+        quarter: false,
+        half: false,
+        threeQuarters: false,
+        completed: false,
+      };
+    }
   };
 
   const handlePause = () => {

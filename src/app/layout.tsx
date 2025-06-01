@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Dhanavinya.id",
     default: "Dhanavinya.id",
   },
-  description: "Building a better live one at a time",
+  description: "From success to significance",
 };
 
 export default function RootLayout({

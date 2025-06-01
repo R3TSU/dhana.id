@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { calculateDaysSinceEnrollment } from "@/utils/enrollmentDays";
 import VideoCard from "@/components/course/VideoCard";
 import {
   getCourseWithLessonsBySlug,
@@ -76,58 +77,18 @@ export default async function CoursePage({
           enrollmentError =
             "Could not fetch enrollment details. Content may be restricted.";
       } else if (enrollmentDate) {
-        // Get current time in UTC
-        const now = new Date();
-
-        // Convert current time to UTC+7 by adding 7 hours
-        const nowUTC7 = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-
-        // Create a date object for the start of the day in UTC+7
-        const todayUTC7 = new Date(
-          Date.UTC(
-            nowUTC7.getUTCFullYear(),
-            nowUTC7.getUTCMonth(),
-            nowUTC7.getUTCDate(),
-          ),
-        );
-
-        // Convert enrollment date to UTC+7
-        const enrollDate = new Date(enrollmentDate);
-        const enrollDateUTC7 = new Date(
-          enrollDate.getTime() + 7 * 60 * 60 * 1000,
-        );
-
-        // Set both dates to start of their respective days in UTC+7
-        const enrollDateStart = new Date(
-          Date.UTC(
-            enrollDateUTC7.getUTCFullYear(),
-            enrollDateUTC7.getUTCMonth(),
-            enrollDateUTC7.getUTCDate(),
-          ),
-        );
-
-        // Calculate difference in days
-        const diffTime = todayUTC7.getTime() - enrollDateStart.getTime();
-        daysSinceEnrollment = Math.max(
-          1,
-          Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1,
-        );
-
-        console.log("now (UTC):", now.toISOString());
-        console.log("nowUTC7:", nowUTC7.toISOString());
-        console.log("todayUTC7 (start of day UTC+7):", todayUTC7.toISOString());
-        console.log("enrollDate (UTC):", enrollDate.toISOString());
-        console.log("enrollDateUTC7:", enrollDateUTC7.toISOString());
+        daysSinceEnrollment = calculateDaysSinceEnrollment(enrollmentDate);
         console.log(
-          "enrollDateStart (start of day UTC+7):",
-          enrollDateStart.toISOString(),
+          "Calculated daysSinceEnrollment using utility:",
+          daysSinceEnrollment,
         );
       } else {
         // Not enrolled or no enrollment date found, treat as not started for dripping
         daysSinceEnrollment = 0;
+        console.log(
+          "User not enrolled or no enrollment date, daysSinceEnrollment set to 0",
+        );
       }
-
-      console.log("daysSinceEnrollment", daysSinceEnrollment);
     }
   }
 

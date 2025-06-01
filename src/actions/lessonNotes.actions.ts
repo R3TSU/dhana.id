@@ -95,15 +95,7 @@ export async function upsertLessonNote(params: {
     return { note: null, error: "Cannot save empty notes.", success: false };
   }
 
-  console.log(
-    "[upsertLessonNote] Processing note for lessonId:",
-    lessonId,
-    "with content length:",
-    trimmedContent.length,
-  );
-
   try {
-    console.log("[upsertLessonNote] Checking for existing note...");
     const existingNote = await db.query.lesson_notes.findFirst({
       where: and(
         eq(lesson_notes.lessonId, lessonId),
@@ -111,22 +103,7 @@ export async function upsertLessonNote(params: {
       ),
     });
 
-    console.log(
-      "[upsertLessonNote] Existing note found:",
-      !!existingNote,
-      existingNote
-        ? {
-            noteId: existingNote.id,
-            contentLength: existingNote.content?.length || 0,
-          }
-        : null,
-    );
-
     if (existingNote) {
-      console.log(
-        "[upsertLessonNote] Updating existing note with ID:",
-        existingNote.id,
-      );
       const updatedNotes = await db
         .update(lesson_notes)
         .set({
@@ -152,10 +129,6 @@ export async function upsertLessonNote(params: {
 
       return { note: updatedNotes[0] || null, error: null, success: true };
     } else {
-      console.log(
-        "[upsertLessonNote] Creating new note for lesson ID:",
-        lessonId,
-      );
       const newNotes = await db
         .insert(lesson_notes)
         .values({
@@ -164,17 +137,6 @@ export async function upsertLessonNote(params: {
           content: trimmedContent,
         })
         .returning();
-
-      console.log(
-        "[upsertLessonNote] Insert successful:",
-        !!newNotes[0],
-        newNotes[0]
-          ? {
-              noteId: newNotes[0].id,
-              contentLength: newNotes[0].content?.length || 0,
-            }
-          : null,
-      );
 
       // Revalidate the path to ensure UI updates
       revalidatePath(`/lesson/${lessonId}`);

@@ -42,7 +42,10 @@ const VideoCard = ({
           )}
         />
         {isAvailable ? (
-          <ProgressBarLink href={`/lesson/${lessonSlug}`} className="absolute inset-0">
+          <ProgressBarLink
+            href={`/lesson/${lessonSlug}`}
+            className="absolute inset-0"
+          >
             <div className="absolute inset-0 bg-violet-500/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="w-12 h-12 bg-coral rounded-full flex items-center justify-center">
                 <Play size={20} className="text-white ml-1" />
