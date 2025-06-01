@@ -13,7 +13,7 @@ import {
 
 const MobileMenu = () => {
   const router = useRouter();
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const menuItems = [
     {
@@ -25,7 +25,7 @@ const MobileMenu = () => {
       icon: Library,
       label: "Library",
       path: "/library",
-      disabled: true
+      disabled: true,
     },
     {
       icon: User,
@@ -41,15 +41,16 @@ const MobileMenu = () => {
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-50 bg-gray-800">
       <nav className="grid grid-cols-3 items-center">
-        {menuItems.map((item) => (item.disabled ? (
+        {menuItems.map((item) =>
+          item.disabled ? (
             <Popover key={item.label}>
               <PopoverTrigger asChild>
                 <Button
                   className={cn(
                     "flex flex-col items-center justify-center px-6 py-6 w-full bg-gray-800 hover:bg-gray-700",
                     isActive(item.path)
-                      ? "text-purple-400 opacity-70" 
-                      : "text-white opacity-70"     
+                      ? "text-purple-400 opacity-70"
+                      : "text-white opacity-70",
                   )}
                 >
                   <item.icon size={20} />
@@ -61,25 +62,19 @@ const MobileMenu = () => {
               </PopoverContent>
             </Popover>
           ) : (
-            <Link
-              key={item.label} 
-              href={item.path}
-              passHref 
-            >
+            <Link key={item.label} href={item.path} passHref>
               <Button
                 className={cn(
                   "flex flex-col items-center justify-center px-6 py-6 w-full cursor-pointer bg-gray-800 hover:bg-gray-700",
-                  isActive(item.path)
-                    ? "text-purple-400"
-                    : "text-white"
+                  isActive(item.path) ? "text-purple-400" : "text-white",
                 )}
               >
                 <item.icon size={20} />
                 <span className="text-xs mt-1">{item.label}</span>
               </Button>
             </Link>
-          )
-        ))}
+          ),
+        )}
       </nav>
     </footer>
   );

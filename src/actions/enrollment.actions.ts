@@ -1,7 +1,13 @@
 "use server";
 
 import { db } from "@/db/drizzle";
-import { course_enrollments, courses, users, lessons, userLessonAccessOverrides } from "@/db/schema"; 
+import {
+  course_enrollments,
+  courses,
+  users,
+  lessons,
+  userLessonAccessOverrides,
+} from "@/db/schema";
 import { getLessonDetailsBySlug } from "./admin/lesson.actions";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
@@ -10,7 +16,9 @@ import { revalidatePath } from "next/cache";
 export type CourseEnrollment = typeof course_enrollments.$inferSelect;
 
 // Helper function to get internal user ID from Clerk User ID
-async function getInternalUserIdFromClerkId(clerkUserId: string): Promise<number | null> {
+async function getInternalUserIdFromClerkId(
+  clerkUserId: string,
+): Promise<number | null> {
   if (!clerkUserId) return null;
   try {
     const user = await db.query.users.findFirst({
@@ -27,28 +35,36 @@ async function getInternalUserIdFromClerkId(clerkUserId: string): Promise<number
 /**
  * Checks if the current user is enrolled in a specific course.
  */
-export async function checkEnrollment(courseId: number): Promise<{ 
-  isEnrolled: boolean; 
-  enrollmentDetails: CourseEnrollment | null; 
-  error: string | null; 
+export async function checkEnrollment(courseId: number): Promise<{
+  isEnrolled: boolean;
+  enrollmentDetails: CourseEnrollment | null;
+  error: string | null;
 }> {
   const { userId } = await auth();
 
   if (!userId) {
-    return { isEnrolled: false, enrollmentDetails: null, error: "User not authenticated." };
+    return {
+      isEnrolled: false,
+      enrollmentDetails: null,
+      error: "User not authenticated.",
+    };
   }
 
   const internalUserId = await getInternalUserIdFromClerkId(userId);
 
   if (!internalUserId) {
-    return { isEnrolled: false, enrollmentDetails: null, error: "User record not found." };
+    return {
+      isEnrolled: false,
+      enrollmentDetails: null,
+      error: "User record not found.",
+    };
   }
 
   try {
     const enrollment = await db.query.course_enrollments.findFirst({
       where: and(
         eq(course_enrollments.courseId, courseId),
-        eq(course_enrollments.userId, internalUserId) // Use internal integer userId
+        eq(course_enrollments.userId, internalUserId), // Use internal integer userId
       ),
     });
 
@@ -59,7 +75,11 @@ export async function checkEnrollment(courseId: number): Promise<{
     }
   } catch (err) {
     console.error("Error checking course enrollment:", err);
-    return { isEnrolled: false, enrollmentDetails: null, error: "Failed to check enrollment." };
+    return {
+      isEnrolled: false,
+      enrollmentDetails: null,
+      error: "Failed to check enrollment.",
+    };
   }
 }
 
@@ -67,11 +87,14 @@ export async function checkEnrollment(courseId: number): Promise<{
  * Enrolls the current user in a course if they aren't already.
  * For now, all enrollments are free.
  */
-export async function enrollInCourse(courseId: number, providedInternalUserId?: number): Promise<{ 
-  enrollment: CourseEnrollment | null; 
-  error: string | null; 
+export async function enrollInCourse(
+  courseId: number,
+  providedInternalUserId?: number,
+): Promise<{
+  enrollment: CourseEnrollment | null;
+  error: string | null;
   success: boolean;
-  message?: string; 
+  message?: string;
 }> {
   let internalUserIdToUse: number | null;
 
@@ -80,38 +103,46 @@ export async function enrollInCourse(courseId: number, providedInternalUserId?: 
   } else {
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
-      return { enrollment: null, error: "User not authenticated.", success: false };
+      return {
+        enrollment: null,
+        error: "User not authenticated.",
+        success: false,
+      };
     }
     internalUserIdToUse = await getInternalUserIdFromClerkId(clerkUserId);
   }
 
   if (!internalUserIdToUse) {
-    return { enrollment: null, error: "User record not found.", success: false };
+    return {
+      enrollment: null,
+      error: "User record not found.",
+      success: false,
+    };
   }
 
   try {
     const courseExists = await db.query.courses.findFirst({
-        where: eq(courses.id, courseId),
-        columns: { id: true }
+      where: eq(courses.id, courseId),
+      columns: { id: true },
     });
 
     if (!courseExists) {
-        return { enrollment: null, error: "Course not found.", success: false };
+      return { enrollment: null, error: "Course not found.", success: false };
     }
 
     const existingEnrollment = await db.query.course_enrollments.findFirst({
       where: and(
         eq(course_enrollments.courseId, courseId),
-        eq(course_enrollments.userId, internalUserIdToUse) // Use internal integer userId
+        eq(course_enrollments.userId, internalUserIdToUse), // Use internal integer userId
       ),
     });
 
     if (existingEnrollment) {
-      return { 
-        enrollment: existingEnrollment, 
-        error: null, 
-        success: true, 
-        message: "User already enrolled in this course." 
+      return {
+        enrollment: existingEnrollment,
+        error: null,
+        success: true,
+        message: "User already enrolled in this course.",
       };
     }
 
@@ -121,26 +152,47 @@ export async function enrollInCourse(courseId: number, providedInternalUserId?: 
         userId: internalUserIdToUse, // Use internal integer userId
         courseId: courseId,
         enrollmentDate: new Date(),
-        status: 'enrolled',
+        status: "enrolled",
         pricePaid: 0,
       })
       .returning();
-    
+
     if (newEnrollmentResult.length === 0) {
-        return { enrollment: null, error: "Failed to create enrollment record.", success: false };
+      return {
+        enrollment: null,
+        error: "Failed to create enrollment record.",
+        success: false,
+      };
     }
-    
+
     // Optional: revalidatePath if needed for UI updates
-    // e.g., revalidatePath(`/course/${courseSlug}`); 
+    // e.g., revalidatePath(`/course/${courseSlug}`);
 
-    return { enrollment: newEnrollmentResult[0], error: null, success: true, message: "Successfully enrolled in course." };
-
+    return {
+      enrollment: newEnrollmentResult[0],
+      error: null,
+      success: true,
+      message: "Successfully enrolled in course.",
+    };
   } catch (err) {
     console.error("Error enrolling in course:", err);
-    if (err instanceof Error && 'constraint' in err && typeof err.constraint === 'string' && err.constraint.includes('course_enrollments_user_course_idx')) {
-        return { enrollment: null, error: "User is already enrolled (concurrent request?).", success: false };
+    if (
+      err instanceof Error &&
+      "constraint" in err &&
+      typeof err.constraint === "string" &&
+      err.constraint.includes("course_enrollments_user_course_idx")
+    ) {
+      return {
+        enrollment: null,
+        error: "User is already enrolled (concurrent request?).",
+        success: false,
+      };
     }
-    return { enrollment: null, error: "Failed to enroll in course.", success: false };
+    return {
+      enrollment: null,
+      error: "Failed to enroll in course.",
+      success: false,
+    };
   }
 }
 
@@ -170,7 +222,7 @@ export async function getUserEnrollmentForCourse(courseId: number): Promise<{
     const enrollment = await db.query.course_enrollments.findFirst({
       where: and(
         eq(course_enrollments.courseId, courseId),
-        eq(course_enrollments.userId, internalUserId)
+        eq(course_enrollments.userId, internalUserId),
       ),
       columns: { enrollmentDate: true },
     });
@@ -179,11 +231,17 @@ export async function getUserEnrollmentForCourse(courseId: number): Promise<{
       return { enrollmentDate: enrollment.enrollmentDate, error: null };
     } else {
       // Not enrolled or enrollmentDate is missing (though schema has defaultNow())
-      return { enrollmentDate: null, error: "User not enrolled in this course." }; 
+      return {
+        enrollmentDate: null,
+        error: "User not enrolled in this course.",
+      };
     }
   } catch (err) {
     console.error("Error fetching user enrollment for course:", err);
-    return { enrollmentDate: null, error: "Failed to fetch enrollment details." };
+    return {
+      enrollmentDate: null,
+      error: "Failed to fetch enrollment details.",
+    };
   }
 }
 
@@ -191,7 +249,10 @@ export async function getUserEnrollmentForCourse(courseId: number): Promise<{
  * Grants special access to a lesson for a user, typically after signing up from a lesson preview.
  * This involves enrolling them in the course (if not already) and adding an override record.
  */
-export async function grantLessonAccessOnSignup(lessonSlug: string, internalUserId: number): Promise<{
+export async function grantLessonAccessOnSignup(
+  lessonSlug: string,
+  internalUserId: number,
+): Promise<{
   success: boolean;
   error: string | null;
   message?: string;
@@ -207,7 +268,10 @@ export async function grantLessonAccessOnSignup(lessonSlug: string, internalUser
     // 1. Get lesson details to find courseId and lessonId
     const lessonDetailsResult = await getLessonDetailsBySlug(lessonSlug);
     if (lessonDetailsResult.error || !lessonDetailsResult.data) {
-      return { success: false, error: lessonDetailsResult.error || "Lesson not found." };
+      return {
+        success: false,
+        error: lessonDetailsResult.error || "Lesson not found.",
+      };
     }
     const { id: lessonId, course_id: courseId } = lessonDetailsResult.data;
 
@@ -218,19 +282,28 @@ export async function grantLessonAccessOnSignup(lessonSlug: string, internalUser
     // 2. Ensure user is enrolled in the course
     const enrollmentResult = await enrollInCourse(courseId, internalUserId);
     if (!enrollmentResult.success) {
-      return { success: false, error: enrollmentResult.error || "Failed to enroll in course." };
+      return {
+        success: false,
+        error: enrollmentResult.error || "Failed to enroll in course.",
+      };
     }
 
     // 3. Check if an override already exists
-    const existingOverride = await db.query.userLessonAccessOverrides.findFirst({
-      where: and(
-        eq(userLessonAccessOverrides.userId, internalUserId),
-        eq(userLessonAccessOverrides.lessonId, lessonId)
-      ),
-    });
+    const existingOverride = await db.query.userLessonAccessOverrides.findFirst(
+      {
+        where: and(
+          eq(userLessonAccessOverrides.userId, internalUserId),
+          eq(userLessonAccessOverrides.lessonId, lessonId),
+        ),
+      },
+    );
 
     if (existingOverride) {
-      return { success: true, message: "Lesson access override already exists.", error: null };
+      return {
+        success: true,
+        message: "Lesson access override already exists.",
+        error: null,
+      };
     }
 
     // 4. Insert the lesson access override
@@ -244,18 +317,26 @@ export async function grantLessonAccessOnSignup(lessonSlug: string, internalUser
     // revalidatePath(`/lesson/${lessonSlug}`);
     // revalidatePath(`/course/${lessonDetailsResult.data.courseSlug}`);
 
-    return { success: true, message: "Lesson access granted successfully.", error: null };
-
+    return {
+      success: true,
+      message: "Lesson access granted successfully.",
+      error: null,
+    };
   } catch (err) {
     console.error("Error granting lesson access on signup:", err);
-    return { success: false, error: "An unexpected error occurred while granting lesson access." };
+    return {
+      success: false,
+      error: "An unexpected error occurred while granting lesson access.",
+    };
   }
 }
 
 /**
  * Checks if the current user has an explicit access override for a specific lesson.
  */
-export async function hasLessonAccessOverride(lessonId: number): Promise<boolean> {
+export async function hasLessonAccessOverride(
+  lessonId: number,
+): Promise<boolean> {
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) {
     // Not authenticated, so no override possible
@@ -268,9 +349,11 @@ export async function hasLessonAccessOverride(lessonId: number): Promise<boolean
     return false;
   }
 
-  if (!lessonId || typeof lessonId !== 'number') {
+  if (!lessonId || typeof lessonId !== "number") {
     // Invalid lessonId passed
-    console.warn(`hasLessonAccessOverride called with invalid lessonId: ${lessonId}`);
+    console.warn(
+      `hasLessonAccessOverride called with invalid lessonId: ${lessonId}`,
+    );
     return false;
   }
 
@@ -278,13 +361,16 @@ export async function hasLessonAccessOverride(lessonId: number): Promise<boolean
     const override = await db.query.userLessonAccessOverrides.findFirst({
       where: and(
         eq(userLessonAccessOverrides.userId, internalUserId),
-        eq(userLessonAccessOverrides.lessonId, lessonId)
+        eq(userLessonAccessOverrides.lessonId, lessonId),
       ),
       columns: { id: true }, // Only need to check for existence
     });
     return !!override;
   } catch (error) {
-    console.error(`Error checking lesson access override for lessonId ${lessonId}, userId ${internalUserId}:`, error);
+    console.error(
+      `Error checking lesson access override for lessonId ${lessonId}, userId ${internalUserId}:`,
+      error,
+    );
     return false; // Fail safe: if error, assume no override
   }
 }

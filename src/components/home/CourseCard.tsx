@@ -12,29 +12,40 @@ interface CourseCardProps {
   startDate?: Date | null;
 }
 
-const CourseCard = ({ id, slug, title, subtitle, description, thumbnailUrl, isActive = true, startDate = null }: CourseCardProps) => {
+const CourseCard = ({
+  id,
+  slug,
+  title,
+  subtitle,
+  description,
+  thumbnailUrl,
+  isActive = true,
+  startDate = null,
+}: CourseCardProps) => {
   // Check if course is available based on start date
   const now = new Date();
   const isAvailable = isActive && (!startDate || new Date(startDate) <= now);
-  
+
   // Format date for display if needed
-  const formattedStartDate = startDate ? new Date(startDate).toLocaleDateString() : null;
-  
+  const formattedStartDate = startDate
+    ? new Date(startDate).toLocaleDateString()
+    : null;
+
   return (
-    <div 
-      className={`card group h-full flex mb-8 flex-col ${isAvailable ? 'cursor-pointer transform transition-all duration-300 hover:scale-105' : 'cursor-not-allowed'} bg-transparent`}
+    <div
+      className={`card group h-full flex mb-8 flex-col ${isAvailable ? "cursor-pointer transform transition-all duration-300 hover:scale-105" : "cursor-not-allowed"} bg-transparent`}
     >
       <div className="relative w-full overflow-hidden rounded-lg bg-transparent border-2 border-white">
         {isAvailable ? (
           <Link href={`/course/${slug}`} className="block">
             <div className="bg-black/70 aspect-[4/3]">
-              <Image 
-                src={thumbnailUrl} 
+              <Image
+                src={thumbnailUrl}
                 alt="Click here to start your program"
                 width={500}
                 height={375}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: "transparent" }}
               />
             </div>
             <div className="p-4 bg-white/70 flex flex-col flex-grow">
@@ -45,29 +56,26 @@ const CourseCard = ({ id, slug, title, subtitle, description, thumbnailUrl, isAc
         ) : (
           <div className="block">
             <div className="bg-black/70 aspect-[4/3]">
-              <Image 
-                src={thumbnailUrl} 
+              <Image
+                src={thumbnailUrl}
                 alt="Program coming soon"
                 width={500}
                 height={375}
                 className="w-full h-full object-cover opacity-70"
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: "transparent" }}
               />
             </div>
             <div className="p-4 bg-white/70 flex flex-col flex-grow">
               <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
               <p className="text-gray-600 mt-2">{description}</p>
-              
             </div>
           </div>
         )}
-        
+
         {/* Gray overlay for unavailable courses */}
         {!isAvailable && (
           <div className="absolute inset-0 bg-gray-800/70 flex items-center justify-center">
-            <div className="text-center p-4">
-              
-            </div>
+            <div className="text-center p-4"></div>
           </div>
         )}
       </div>

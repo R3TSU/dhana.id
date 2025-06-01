@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -9,18 +9,18 @@ interface GetStartedProps {
 }
 
 export function GetStarted({ lessonSlug }: GetStartedProps) {
-    const { openSignIn } = useClerk();
-    return (
-        <Button 
-            className="btn-secondary bg-purple-500/70 text-lg px-8 py-6"
-            onClick={() => {
+  const { openSignIn } = useClerk();
+  return (
+    <Button
+      className="btn-secondary bg-purple-500/70 text-lg px-8 py-6"
+      onClick={() => {
         if (lessonSlug) {
-          sessionStorage.setItem('fromLessonSlug', lessonSlug);
+          sessionStorage.setItem("fromLessonSlug", lessonSlug);
         }
         openSignIn();
       }}
-            >
-            Get Started <ArrowRight className="ml-2" />
-        </Button>
-    )
+    >
+      Get Started <ArrowRight className="ml-2" />
+    </Button>
+  );
 }

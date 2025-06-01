@@ -1,13 +1,27 @@
-import Link from 'next/link';
-import { Suspense } from 'react';
-import { getEnrollmentsForAdminView, getCoursesForAdminFilter, AdminEnrollmentView } from '@/actions/admin/enrollment.actions';
-import { PaginationControls } from '@/components/shared/PaginationControls'; // Assuming this exists or will be created
-import EnrollmentFilterClient from '@/components/admin/enrollments/EnrollmentFilterClient';
+import Link from "next/link";
+import { Suspense } from "react";
+import {
+  getEnrollmentsForAdminView,
+  getCoursesForAdminFilter,
+  AdminEnrollmentView,
+} from "@/actions/admin/enrollment.actions";
+import { PaginationControls } from "@/components/shared/PaginationControls"; // Assuming this exists or will be created
+import EnrollmentFilterClient from "@/components/admin/enrollments/EnrollmentFilterClient";
 
 // Removed AdminEnrollmentsPageProps interface
 
-async function EnrollmentsTable({ currentPage, currentCourseId }: { currentPage: number; currentCourseId?: number }) {
-  const { data: enrollments, totalCount, error } = await getEnrollmentsForAdminView({
+async function EnrollmentsTable({
+  currentPage,
+  currentCourseId,
+}: {
+  currentPage: number;
+  currentCourseId?: number;
+}) {
+  const {
+    data: enrollments,
+    totalCount,
+    error,
+  } = await getEnrollmentsForAdminView({
     page: currentPage,
     courseIdFilter: currentCourseId,
     pageSize: 15, // Or your preferred page size
@@ -26,22 +40,34 @@ async function EnrollmentsTable({ currentPage, currentCourseId }: { currentPage:
       <table className="min-w-full table-auto">
         <thead className="bg-gray-200">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Name</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Name</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrollment Date</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              User Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Course Name
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Enrollment Date
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {enrollments.map((enrollment) => (
             <tr key={enrollment.enrollmentId}>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{enrollment.userName || 'N/A'}</div>
+                <div className="text-sm font-medium text-gray-900">
+                  {enrollment.userName || "N/A"}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{enrollment.courseName || 'N/A'}</div>
+                <div className="text-sm text-gray-900">
+                  {enrollment.courseName || "N/A"}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{new Date(enrollment.enrollmentDate).toLocaleDateString()}</div>
+                <div className="text-sm text-gray-900">
+                  {new Date(enrollment.enrollmentDate).toLocaleDateString()}
+                </div>
               </td>
             </tr>
           ))}
@@ -63,12 +89,13 @@ export default async function AdminEnrollmentsPage({
 }: {
   searchParams?: Promise<{ page?: string; courseId?: string }>;
 }) {
-  const { page = '1', courseId = '' } = await searchParams || {};
+  const { page = "1", courseId = "" } = (await searchParams) || {};
 
   const currentPage = parseInt(page, 10);
   const currentCourseId = courseId ? parseInt(courseId, 10) : undefined;
 
-  const { data: coursesForFilter, error: filterError } = await getCoursesForAdminFilter();
+  const { data: coursesForFilter, error: filterError } =
+    await getCoursesForAdminFilter();
 
   if (filterError) {
     // Potentially handle this more gracefully, but for now:
@@ -83,14 +110,17 @@ export default async function AdminEnrollmentsPage({
       </div>
 
       <div className="mb-4">
-        <EnrollmentFilterClient 
-          courses={coursesForFilter || []} 
-          currentCourseId={currentCourseId?.toString()} 
+        <EnrollmentFilterClient
+          courses={coursesForFilter || []}
+          currentCourseId={currentCourseId?.toString()}
         />
       </div>
 
       <Suspense fallback={<p>Loading enrollments...</p>}>
-        <EnrollmentsTable currentPage={currentPage} currentCourseId={currentCourseId} />
+        <EnrollmentsTable
+          currentPage={currentPage}
+          currentCourseId={currentCourseId}
+        />
       </Suspense>
     </div>
   );

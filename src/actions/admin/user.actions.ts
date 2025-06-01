@@ -17,10 +17,7 @@ async function ensureAdmin() {
   }
 
   const adminUser = await db.query.users.findFirst({
-    where: and(
-      eq(users.clerk_user_id, userId),
-      eq(users.role, "admin")
-    ),
+    where: and(eq(users.clerk_user_id, userId), eq(users.role, "admin")),
   });
 
   if (!adminUser) {
@@ -50,44 +47,49 @@ export async function getUsers({
 
   try {
     const offset = (page - 1) * limit;
-    
+
     // Create the appropriate order by clause based on the requested column
     let orderByClause;
-    
+
     // Handle each possible sort column explicitly to avoid type errors
     switch (sortBy) {
-      case 'id':
+      case "id":
         orderByClause = sortOrder === "asc" ? asc(users.id) : desc(users.id);
         break;
-      case 'fullName':
-        orderByClause = sortOrder === "asc" ? asc(users.fullName) : desc(users.fullName);
+      case "fullName":
+        orderByClause =
+          sortOrder === "asc" ? asc(users.fullName) : desc(users.fullName);
         break;
-      case 'email':
-        orderByClause = sortOrder === "asc" ? asc(users.email) : desc(users.email);
+      case "email":
+        orderByClause =
+          sortOrder === "asc" ? asc(users.email) : desc(users.email);
         break;
-      case 'role':
-        orderByClause = sortOrder === "asc" ? asc(users.role) : desc(users.role);
+      case "role":
+        orderByClause =
+          sortOrder === "asc" ? asc(users.role) : desc(users.role);
         break;
-      case 'updated_at':
-        orderByClause = sortOrder === "asc" ? asc(users.updated_at) : desc(users.updated_at);
+      case "updated_at":
+        orderByClause =
+          sortOrder === "asc" ? asc(users.updated_at) : desc(users.updated_at);
         break;
-      case 'created_at':
+      case "created_at":
       default:
-        orderByClause = sortOrder === "asc" ? asc(users.created_at) : desc(users.created_at);
+        orderByClause =
+          sortOrder === "asc" ? asc(users.created_at) : desc(users.created_at);
         break;
     }
-    
+
     // Handle case with no filters
     if (!search && !role) {
       const totalCount = await db.$count(users);
       const totalPages = Math.ceil(totalCount / limit);
-      
+
       const usersList = await db.query.users.findMany({
         limit,
         offset,
         orderBy: orderByClause,
       });
-      
+
       return {
         users: usersList,
         pagination: {
@@ -99,36 +101,36 @@ export async function getUsers({
         },
       };
     }
-    
+
     // Handle case with filters
     let conditions = [];
-    
+
     if (search) {
       conditions.push(
         or(
           like(users.fullName, `%${search}%`),
           like(users.email, `%${search}%`),
           like(users.whatsappNumber, `%${search}%`),
-          like(users.address, `%${search}%`)
-        )
+          like(users.address, `%${search}%`),
+        ),
       );
     }
-    
+
     if (role) {
       conditions.push(eq(users.role, role));
     }
-    
+
     const whereClause = and(...conditions);
     const totalCount = await db.$count(users, whereClause);
     const totalPages = Math.ceil(totalCount / limit);
-    
+
     const usersList = await db.query.users.findMany({
       where: whereClause,
       limit,
       offset,
       orderBy: orderByClause,
     });
-    
+
     return {
       users: usersList,
       pagination: {
@@ -177,31 +179,44 @@ export async function getUserById(userId: number) {
 
 // Schema for admin updating user profile
 const adminUpdateUserSchema = z.object({
-  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
-  whatsappNumber: z.string().min(1, { message: "WhatsApp number is required." }),
+  fullName: z
+    .string()
+    .min(2, { message: "Full name must be at least 2 characters." }),
+  whatsappNumber: z
+    .string()
+    .min(1, { message: "WhatsApp number is required." }),
   email: z.string().email({ message: "Invalid email address." }),
   address: z.string().optional(),
   birthDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
   birthMonth: z.coerce.number().int().min(1).max(12).optional().nullable(),
-  birthYear: z.coerce.number().int().min(1900).max(new Date().getFullYear()).optional().nullable(),
+  birthYear: z.coerce
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear())
+    .optional()
+    .nullable(),
   role: z.enum(["user", "admin"]),
 });
 
 // Update a user (admin function)
-export async function updateUser(
-  userId: number,
-  formData: FormData
-) {
+export async function updateUser(userId: number, formData: FormData) {
   await ensureAdmin();
 
   const rawFormData = {
     fullName: formData.get("fullName") as string,
     email: formData.get("email") as string,
     whatsappNumber: formData.get("whatsappNumber") as string,
-    address: formData.get("address") as string || undefined,
-    birthDay: formData.get("birthDay") ? Number(formData.get("birthDay")) : undefined,
-    birthMonth: formData.get("birthMonth") ? Number(formData.get("birthMonth")) : undefined,
-    birthYear: formData.get("birthYear") ? Number(formData.get("birthYear")) : undefined,
+    address: (formData.get("address") as string) || undefined,
+    birthDay: formData.get("birthDay")
+      ? Number(formData.get("birthDay"))
+      : undefined,
+    birthMonth: formData.get("birthMonth")
+      ? Number(formData.get("birthMonth"))
+      : undefined,
+    birthYear: formData.get("birthYear")
+      ? Number(formData.get("birthYear"))
+      : undefined,
     role: formData.get("role") as "user" | "admin",
   };
 
@@ -215,7 +230,16 @@ export async function updateUser(
     };
   }
 
-  let { fullName, email, whatsappNumber, address, birthDay, birthMonth, birthYear, role } = validation.data;
+  let {
+    fullName,
+    email,
+    whatsappNumber,
+    address,
+    birthDay,
+    birthMonth,
+    birthYear,
+    role,
+  } = validation.data;
 
   if (whatsappNumber) {
     whatsappNumber = normalizeMobileNumber(whatsappNumber);
@@ -223,9 +247,18 @@ export async function updateUser(
 
   // Convert empty strings to null for optional fields
   const finalAddress = address === undefined || address === "" ? null : address;
-  const finalBirthDay = birthDay === undefined || birthDay === null || isNaN(birthDay) ? null : birthDay;
-  const finalBirthMonth = birthMonth === undefined || birthMonth === null || isNaN(birthMonth) ? null : birthMonth;
-  const finalBirthYear = birthYear === undefined || birthYear === null || isNaN(birthYear) ? null : birthYear;
+  const finalBirthDay =
+    birthDay === undefined || birthDay === null || isNaN(birthDay)
+      ? null
+      : birthDay;
+  const finalBirthMonth =
+    birthMonth === undefined || birthMonth === null || isNaN(birthMonth)
+      ? null
+      : birthMonth;
+  const finalBirthYear =
+    birthYear === undefined || birthYear === null || isNaN(birthYear)
+      ? null
+      : birthYear;
 
   try {
     // Check if user exists
@@ -238,7 +271,8 @@ export async function updateUser(
     }
 
     // Update user
-    await db.update(users)
+    await db
+      .update(users)
       .set({
         fullName,
         email,

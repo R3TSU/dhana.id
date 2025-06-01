@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface PreviewPageClientWrapperProps {
   lessonSlug: string;
   children: React.ReactNode;
 }
 
-export function PreviewPageClientWrapper({ lessonSlug, children }: PreviewPageClientWrapperProps) {
+export function PreviewPageClientWrapper({
+  lessonSlug,
+  children,
+}: PreviewPageClientWrapperProps) {
   const { userId, isLoaded } = useAuth();
   const router = useRouter();
 

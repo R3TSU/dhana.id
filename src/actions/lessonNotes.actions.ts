@@ -8,7 +8,9 @@ import { revalidatePath } from "next/cache";
 
 export type LessonNote = typeof lesson_notes.$inferSelect;
 
-async function getInternalUserIdFromClerkId(clerkUserId: string): Promise<number | null> {
+async function getInternalUserIdFromClerkId(
+  clerkUserId: string,
+): Promise<number | null> {
   if (!clerkUserId) return null;
   try {
     const user = await db.query.users.findFirst({
@@ -22,8 +24,8 @@ async function getInternalUserIdFromClerkId(clerkUserId: string): Promise<number
   }
 }
 
-export async function getLessonNote(lessonId: number): Promise<{ 
-  note: LessonNote | null; 
+export async function getLessonNote(lessonId: number): Promise<{
+  note: LessonNote | null;
   error: string | null;
 }> {
   const { userId } = await auth();
@@ -42,7 +44,7 @@ export async function getLessonNote(lessonId: number): Promise<{
     const note = await db.query.lesson_notes.findFirst({
       where: and(
         eq(lesson_notes.lessonId, lessonId),
-        eq(lesson_notes.userId, internalUserId)
+        eq(lesson_notes.userId, internalUserId),
       ),
     });
     return { note: note || null, error: null };
@@ -55,14 +57,14 @@ export async function getLessonNote(lessonId: number): Promise<{
 export async function upsertLessonNote(params: {
   lessonId: number;
   content: string;
-}): Promise<{ 
-  note: LessonNote | null; 
-  error: string | null; 
-  success: boolean 
+}): Promise<{
+  note: LessonNote | null;
+  error: string | null;
+  success: boolean;
 }> {
-  console.log("[upsertLessonNote] Starting with params:", { 
+  console.log("[upsertLessonNote] Starting with params:", {
     lessonId: params.lessonId,
-    contentLength: params.content?.length || 0
+    contentLength: params.content?.length || 0,
   });
 
   const { userId } = await auth();
@@ -72,40 +74,59 @@ export async function upsertLessonNote(params: {
     console.log("[upsertLessonNote] Error: User not authenticated");
     return { note: null, error: "User not authenticated.", success: false };
   }
-  
+
   const internalUserId = await getInternalUserIdFromClerkId(userId);
   console.log("[upsertLessonNote] Internal userId:", internalUserId);
 
   if (!internalUserId) {
-    console.log("[upsertLessonNote] Error: User record not found for clerk ID", userId);
+    console.log(
+      "[upsertLessonNote] Error: User record not found for clerk ID",
+      userId,
+    );
     return { note: null, error: "User record not found.", success: false };
   }
 
   const { lessonId, content } = params;
-  const trimmedContent = content?.trim() || '';
-  
+  const trimmedContent = content?.trim() || "";
+
   // Validate content is not empty
   if (!trimmedContent) {
     console.log("[upsertLessonNote] Error: Empty content provided");
     return { note: null, error: "Cannot save empty notes.", success: false };
   }
-  
-  console.log("[upsertLessonNote] Processing note for lessonId:", lessonId, "with content length:", trimmedContent.length);
+
+  console.log(
+    "[upsertLessonNote] Processing note for lessonId:",
+    lessonId,
+    "with content length:",
+    trimmedContent.length,
+  );
 
   try {
     console.log("[upsertLessonNote] Checking for existing note...");
     const existingNote = await db.query.lesson_notes.findFirst({
       where: and(
         eq(lesson_notes.lessonId, lessonId),
-        eq(lesson_notes.userId, internalUserId)
+        eq(lesson_notes.userId, internalUserId),
       ),
     });
-    
-    console.log("[upsertLessonNote] Existing note found:", !!existingNote, 
-      existingNote ? { noteId: existingNote.id, contentLength: existingNote.content?.length || 0 } : null);
+
+    console.log(
+      "[upsertLessonNote] Existing note found:",
+      !!existingNote,
+      existingNote
+        ? {
+            noteId: existingNote.id,
+            contentLength: existingNote.content?.length || 0,
+          }
+        : null,
+    );
 
     if (existingNote) {
-      console.log("[upsertLessonNote] Updating existing note with ID:", existingNote.id);
+      console.log(
+        "[upsertLessonNote] Updating existing note with ID:",
+        existingNote.id,
+      );
       const updatedNotes = await db
         .update(lesson_notes)
         .set({
@@ -114,16 +135,27 @@ export async function upsertLessonNote(params: {
         })
         .where(eq(lesson_notes.id, existingNote.id))
         .returning();
-      
-      console.log("[upsertLessonNote] Update successful:", !!updatedNotes[0], 
-        updatedNotes[0] ? { noteId: updatedNotes[0].id, contentLength: updatedNotes[0].content?.length || 0 } : null);
-      
+
+      console.log(
+        "[upsertLessonNote] Update successful:",
+        !!updatedNotes[0],
+        updatedNotes[0]
+          ? {
+              noteId: updatedNotes[0].id,
+              contentLength: updatedNotes[0].content?.length || 0,
+            }
+          : null,
+      );
+
       // Revalidate the path to ensure UI updates
       revalidatePath(`/lesson/${lessonId}`);
-      
+
       return { note: updatedNotes[0] || null, error: null, success: true };
     } else {
-      console.log("[upsertLessonNote] Creating new note for lesson ID:", lessonId);
+      console.log(
+        "[upsertLessonNote] Creating new note for lesson ID:",
+        lessonId,
+      );
       const newNotes = await db
         .insert(lesson_notes)
         .values({
@@ -132,13 +164,21 @@ export async function upsertLessonNote(params: {
           content: trimmedContent,
         })
         .returning();
-      
-      console.log("[upsertLessonNote] Insert successful:", !!newNotes[0], 
-        newNotes[0] ? { noteId: newNotes[0].id, contentLength: newNotes[0].content?.length || 0 } : null);
-      
+
+      console.log(
+        "[upsertLessonNote] Insert successful:",
+        !!newNotes[0],
+        newNotes[0]
+          ? {
+              noteId: newNotes[0].id,
+              contentLength: newNotes[0].content?.length || 0,
+            }
+          : null,
+      );
+
       // Revalidate the path to ensure UI updates
       revalidatePath(`/lesson/${lessonId}`);
-      
+
       return { note: newNotes[0] || null, error: null, success: true };
     }
   } catch (err) {

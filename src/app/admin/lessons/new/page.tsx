@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import NewLessonFormLoader from './NewLessonFormLoader';
+import { Suspense } from "react";
+import NewLessonFormLoader from "./NewLessonFormLoader";
 
 function LoadingFallback() {
   return (

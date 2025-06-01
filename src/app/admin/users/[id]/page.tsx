@@ -9,10 +9,12 @@ interface UserEditPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function UserEditPage({ params: paramsPromise }: UserEditPageProps) {
+export default async function UserEditPage({
+  params: paramsPromise,
+}: UserEditPageProps) {
   const { id } = await paramsPromise;
   const userId = parseInt(id, 10);
-  
+
   if (isNaN(userId)) {
     notFound();
   }

@@ -170,17 +170,26 @@ export default function UserEditForm({ user }: UserEditFormProps) {
         <div className="space-y-4">
           <h3 className="text-lg font-medium">User Role</h3>
           <p className="text-sm text-gray-500">
-            Select the appropriate role for this user. Admin users have full access to the admin panel.
+            Select the appropriate role for this user. Admin users have full
+            access to the admin panel.
           </p>
 
-          <RadioGroup defaultValue={user.role || "user"} name="role" className="flex gap-4">
+          <RadioGroup
+            defaultValue={user.role || "user"}
+            name="role"
+            className="flex gap-4"
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="user" id="user" />
-              <Label htmlFor="user" className="cursor-pointer">User</Label>
+              <Label htmlFor="user" className="cursor-pointer">
+                User
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="admin" id="admin" />
-              <Label htmlFor="admin" className="cursor-pointer">Admin</Label>
+              <Label htmlFor="admin" className="cursor-pointer">
+                Admin
+              </Label>
             </div>
           </RadioGroup>
         </div>

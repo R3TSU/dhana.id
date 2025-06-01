@@ -9,10 +9,12 @@ interface DeleteUserPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function DeleteUserPage({ params: paramsPromise }: DeleteUserPageProps) {
+export default async function DeleteUserPage({
+  params: paramsPromise,
+}: DeleteUserPageProps) {
   const { id } = await paramsPromise;
   const userId = parseInt(id, 10);
-  
+
   if (isNaN(userId)) {
     notFound();
   }
@@ -36,15 +38,16 @@ export default async function DeleteUserPage({ params: paramsPromise }: DeleteUs
 
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6">Delete User</h1>
-        
+
         <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
           <h2 className="text-lg font-semibold text-red-700 mb-2">Warning</h2>
           <p className="text-red-600">
-            You are about to delete the user <strong>{user.fullName || user.email}</strong>. 
-            This action cannot be undone and will remove all data associated with this user.
+            You are about to delete the user{" "}
+            <strong>{user.fullName || user.email}</strong>. This action cannot
+            be undone and will remove all data associated with this user.
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -64,7 +67,7 @@ export default async function DeleteUserPage({ params: paramsPromise }: DeleteUs
               <p className="mt-1">{user.role}</p>
             </div>
           </div>
-          
+
           <DeleteUserForm userId={user.id} />
         </div>
       </div>
