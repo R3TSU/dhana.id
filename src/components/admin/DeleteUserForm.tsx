@@ -45,10 +45,10 @@ export default function DeleteUserForm({ userId }: DeleteUserFormProps) {
       >
         Cancel
       </Button>
-      <Button 
-        type="button" 
-        variant="destructive" 
-        onClick={handleDelete} 
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={handleDelete}
         disabled={isDeleting}
         className="bg-red-600 hover:bg-red-700"
       >

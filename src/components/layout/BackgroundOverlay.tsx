@@ -1,19 +1,19 @@
-import React from 'react';
+import React from "react";
 
 interface BackgroundOverlayProps {
   imagePath?: string;
   children?: React.ReactNode;
 }
 
-export default function BackgroundOverlay({ 
-  imagePath = 'https://dev-dhana-id.creatorcenter.id/bg.webp',
-  children 
+export default function BackgroundOverlay({
+  imagePath = "https://dev-dhana-id.creatorcenter.id/bg.webp",
+  children,
 }: BackgroundOverlayProps) {
   return (
     <>
-      <div 
+      <div
         className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{ 
+        style={{
           backgroundImage: `url('${imagePath}')`,
           backgroundBlendMode: "overlay",
         }}

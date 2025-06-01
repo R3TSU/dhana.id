@@ -1,9 +1,28 @@
 import { getUsers } from "@/actions/admin/user.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlusIcon, PencilIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  UserPlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -18,9 +37,9 @@ interface UsersPageProps {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string; limit?: string; search?: string; }>;
+  searchParams?: Promise<{ page?: string; limit?: string; search?: string }>;
 }) {
-  const { page = '1', limit = '50', search = '' } = await searchParams || {};
+  const { page = "1", limit = "50", search = "" } = (await searchParams) || {};
 
   const { users, pagination, error } = await getUsers({
     page: parseInt(page, 10),
@@ -135,8 +154,13 @@ export default async function UsersPage({
           {pagination && pagination.totalPages > 1 && (
             <div className="flex justify-between items-center mt-6">
               <div className="text-sm text-gray-500">
-                Showing {(pagination.currentPage - 1) * (parseInt(limit, 10) || 10) + 1} to{" "}
-                {Math.min(pagination.currentPage * (parseInt(limit, 10) || 10), pagination.totalCount)}{" "}
+                Showing{" "}
+                {(pagination.currentPage - 1) * (parseInt(limit, 10) || 10) + 1}{" "}
+                to{" "}
+                {Math.min(
+                  pagination.currentPage * (parseInt(limit, 10) || 10),
+                  pagination.totalCount,
+                )}{" "}
                 of {pagination.totalCount} users
               </div>
               <div className="flex gap-2">
@@ -149,7 +173,11 @@ export default async function UsersPage({
                       search,
                     },
                   }}
-                  className={!pagination.hasPrevPage ? "pointer-events-none opacity-50" : ""}
+                  className={
+                    !pagination.hasPrevPage
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
                 >
                   <Button
                     variant="outline"
@@ -169,7 +197,11 @@ export default async function UsersPage({
                       search,
                     },
                   }}
-                  className={!pagination.hasNextPage ? "pointer-events-none opacity-50" : ""}
+                  className={
+                    !pagination.hasNextPage
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
                 >
                   <Button
                     variant="outline"

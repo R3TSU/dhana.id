@@ -1,9 +1,9 @@
-import { getCurrentInternalUser } from '@/actions/user.actions';
-import EditProfileForm from '@/components/profile/EditProfileForm';
-import { redirect } from 'next/navigation';
-import { SignOutButton } from '@clerk/nextjs'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentInternalUser } from "@/actions/user.actions";
+import EditProfileForm from "@/components/profile/EditProfileForm";
+import { redirect } from "next/navigation";
+import { SignOutButton } from "@clerk/nextjs";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default async function ProfilePage() {
   const internalUser = await getCurrentInternalUser();
@@ -13,7 +13,7 @@ export default async function ProfilePage() {
     // but as a safeguard, redirect if no internal user record found.
     // If they are authenticated but have no internal record, they should have been
     // redirected to /complete-profile by the middleware already.
-    redirect('/sign-in'); 
+    redirect("/sign-in");
   }
 
   // Ensure email and fullName are passed, even if null, EditProfileForm handles null display
@@ -32,13 +32,10 @@ export default async function ProfilePage() {
       <EditProfileForm user={userData} />
 
       <div className="w-full max-w-lg mx-auto mt-8 mb-12">
-      <SignOutButton>
-        <Button className='w-full cursor-pointer'>
-          Sign Out
-        </Button>
-      </SignOutButton>
+        <SignOutButton>
+          <Button className="w-full cursor-pointer">Sign Out</Button>
+        </SignOutButton>
       </div>
     </div>
   );
 }
-

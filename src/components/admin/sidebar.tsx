@@ -1,45 +1,45 @@
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarHeader,
-    SidebarGroupLabel,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuItem,
-    SidebarMenuButton,
-  } from "@/components/ui/sidebar"
-import { SignedIn, UserButton } from '@clerk/nextjs'
-import Link from "next/link"
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
+import { SignedIn, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 const data = {
-    navMain: [
-      {
-        title: "",
-        url: "#",
-        items: [
-          {
-            title: "Courses",
-            url: "/admin/courses",
-          },
-          {
-            title: "Enrollments",
-            url: "/admin/enrollments",
-          },
-          {
-            title: "Users",
-            url: "/admin/users",
-          },
-        ],
-      },
-    ],
-  }
+  navMain: [
+    {
+      title: "",
+      url: "#",
+      items: [
+        {
+          title: "Courses",
+          url: "/admin/courses",
+        },
+        {
+          title: "Enrollments",
+          url: "/admin/enrollments",
+        },
+        {
+          title: "Users",
+          url: "/admin/users",
+        },
+      ],
+    },
+  ],
+};
 
 export function AppSidebar() {
-    return (
-      <Sidebar>
-        <SidebarHeader>
+  return (
+    <Sidebar>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
@@ -51,8 +51,8 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
+      </SidebarHeader>
+      <SidebarContent>
         {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
@@ -71,12 +71,11 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-        <SidebarFooter>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-        </SidebarFooter>
-      </Sidebar>
-    )
+      <SidebarFooter>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </SidebarFooter>
+    </Sidebar>
+  );
 }
-  

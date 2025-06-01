@@ -1,13 +1,15 @@
 // src/app/admin/courses/[id]/edit/page.tsx
-import { CourseForm } from '@/components/admin/CourseForm';
-import { getCourseById, updateCourse } from '@/actions/admin/course.actions';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { CourseForm } from "@/components/admin/CourseForm";
+import { getCourseById, updateCourse } from "@/actions/admin/course.actions";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
-export default async function EditCoursePage({ params }: {
-  params: Promise<{ courseId: string }>
+export default async function EditCoursePage({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
 }) {
-  const { courseId } = await params
+  const { courseId } = await params;
 
   if (isNaN(parseInt(courseId)) || parseInt(courseId) <= 0) {
     return <p className="text-red-500">Error: Invalid course ID</p>;
@@ -27,7 +29,10 @@ export default async function EditCoursePage({ params }: {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/admin/courses" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+        <Link
+          href="/admin/courses"
+          className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+        >
           &larr; Back to Courses
         </Link>
         <h1 className="text-3xl font-bold mt-2">Edit Course: {course.title}</h1>

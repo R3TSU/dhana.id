@@ -49,11 +49,15 @@ export async function getEnrollmentsForAdminView({
     // Apply filter if present
     if (courseIdFilter) {
       // @ts-ignore Drizzle's dynamic query builder type can be tricky for TS here
-      queryBuilder = queryBuilder.where(eq(course_enrollments.courseId, courseIdFilter));
+      queryBuilder = queryBuilder.where(
+        eq(course_enrollments.courseId, courseIdFilter),
+      );
       // @ts-ignore
-      countQueryBuilder = countQueryBuilder.where(eq(course_enrollments.courseId, courseIdFilter));
+      countQueryBuilder = countQueryBuilder.where(
+        eq(course_enrollments.courseId, courseIdFilter),
+      );
     }
-    
+
     // Finalize data query with ordering and pagination
     const data = await queryBuilder
       .orderBy(desc(course_enrollments.enrollmentDate))
