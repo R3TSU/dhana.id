@@ -87,6 +87,11 @@ export function LessonForm({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file.");
+        return;
+      }
       setThumbnailPreviewUrl(URL.createObjectURL(file));
       setRemoveThumbnailFlag(false); // New file selected, so not removing
     } else {
