@@ -1,12 +1,13 @@
 // src/components/admin/LessonForm.tsx
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { SubmitButton } from "./SubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { lessons, courses as CoursesType } from "@/db/schema"; // Import types
+import type { lessons, courses as CoursesType } from "@/db/schema";
 import Link from "next/link";
+import imageCompression from 'browser-image-compression';
 
 interface InitialValues {
   course_id?: number;
@@ -64,6 +65,7 @@ export function LessonForm({
   );
   const [removeThumbnailFlag, setRemoveThumbnailFlag] =
     useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (
@@ -84,30 +86,58 @@ export function LessonForm({
     }
   }, [initialData?.thumbnail_url, thumbnailPreviewUrl, removeThumbnailFlag]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        alert("Please select a valid image file.");
-        return;
+    if (!file) {
+      setThumbnailPreviewUrl(initialData?.thumbnail_url || null);
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file.");
+      return;
+    }
+
+    try {
+      // Compression options
+      const options = {
+        maxSizeMB: 0.3,          // Maximum file size in MB (500KB)
+        maxWidthOrHeight: 400,   // Maximum width or height (whichever is larger)
+        useWebWorker: true,      // Use web worker for better performance
+        fileType: file.type,     // Keep the original file type
+        initialQuality: 0.8,     // Initial quality (0.8 = 80%)
+        maxIteration: 10,        // Maximum number of compression iterations
+      };
+
+      // Compress the image
+      const compressedFile = await imageCompression(file, options);
+      
+      // Create preview URL from compressed file
+      const previewUrl = URL.createObjectURL(compressedFile);
+      
+      // Update the file input with the compressed file
+      if (fileInputRef.current) {
+        // Create a new DataTransfer object to update the file input
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(new File([compressedFile], file.name, { type: compressedFile.type }));
+        fileInputRef.current.files = dataTransfer.files;
       }
+      
+      setThumbnailPreviewUrl(previewUrl);
+      setRemoveThumbnailFlag(false);
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      // Fallback to original file if compression fails
       setThumbnailPreviewUrl(URL.createObjectURL(file));
-      setRemoveThumbnailFlag(false); // New file selected, so not removing
-    } else {
-      // If no file is selected, revert to initial or clear
-      // setThumbnailPreviewUrl(initialData?.thumbnail_url || null);
     }
   };
 
   const handleRemoveThumbnailClick = () => {
     setThumbnailPreviewUrl(null);
     setRemoveThumbnailFlag(true);
-    const fileInput = document.getElementById(
-      "thumbnailFile",
-    ) as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = ""; // Clear the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Clear the file input
     }
   };
 
@@ -291,6 +321,9 @@ export function LessonForm({
           name="removeThumbnail"
           value={removeThumbnailFlag ? "true" : "false"}
         />
+        <p id="file-constraints" className="mt-1 text-xs text-gray-500">
+          Images will be automatically compressed to max 400px width/height and 300KB
+        </p>
 
         {thumbnailPreviewUrl && !removeThumbnailFlag && (
           <div className="mt-4">

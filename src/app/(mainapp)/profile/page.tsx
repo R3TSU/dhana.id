@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { SignOutButton } from "@clerk/nextjs";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import BackgroundOverlay from "@/components/layout/BackgroundOverlay";
 
 export default async function ProfilePage() {
   const internalUser = await getCurrentInternalUser();
@@ -28,13 +29,15 @@ export default async function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-purple-800 text-white">
-      <EditProfileForm user={userData} />
-
-      <div className="w-full max-w-lg mx-auto mt-8 mb-12">
-        <SignOutButton>
-          <Button className="w-full cursor-pointer">Sign Out</Button>
-        </SignOutButton>
+    <div className="flex flex-col min-h-screen bg-purple-800 text-white relative">
+      <BackgroundOverlay />
+      <div className="container mx-auto px-4 py-12 relative z-10">
+        <EditProfileForm user={userData} />
+        <div className="w-full max-w-lg mx-auto mt-8 mb-12">
+          <SignOutButton>
+            <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white cursor-pointer">Sign Out</Button>
+          </SignOutButton>
+        </div>
       </div>
     </div>
   );
