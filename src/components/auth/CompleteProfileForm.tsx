@@ -29,7 +29,7 @@ const initialState: {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600 text-white" disabled={pending}>
       {pending ? "Saving..." : "Save and Continue"}
     </Button>
   );
