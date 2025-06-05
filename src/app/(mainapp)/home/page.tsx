@@ -48,11 +48,10 @@ export default async function Home() {
             Explore Our Audio Program
           </h1>
           <section className="">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {" "}
-              {/* Increased gap */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
               {coursesData.map((course: PublicCourse) => (
-                <CourseCard
+                <div className="h-full">
+                  <CourseCard
                   key={course.id}
                   id={course.id} // Keep id for React key
                   slug={course.slug} // Pass slug for navigation
@@ -68,6 +67,7 @@ export default async function Home() {
                   isActive={course.isActive}
                   startDate={course.startDate}
                 />
+                </div>
               ))}
             </div>
           </section>
