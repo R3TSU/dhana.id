@@ -35,7 +35,9 @@ export default async function ProfilePage() {
         <EditProfileForm user={userData} />
         <div className="w-full max-w-lg mx-auto mt-8 mb-12">
           <SignOutButton>
-            <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white cursor-pointer">Sign Out</Button>
+            <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white cursor-pointer">
+              Sign Out
+            </Button>
           </SignOutButton>
         </div>
       </div>
