@@ -50,7 +50,11 @@ const initialState: {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="bg-purple-500 hover:bg-purple-600 text-white w-full">
+    <Button
+      type="submit"
+      disabled={pending}
+      className="bg-purple-500 hover:bg-purple-600 text-white w-full"
+    >
       {pending ? "Saving..." : "Save Changes"}
     </Button>
   );
@@ -196,7 +200,7 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               </div>
               <div>
                 <Label htmlFor="birthYear" className="text-xs">
-                  Year
+                  Year (*)
                 </Label>
                 <Input
                   id="birthYear"
@@ -206,6 +210,7 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
                   defaultValue={user.birthYear || ""}
                   min="1900"
                   max={new Date().getFullYear()}
+                  required
                 />
                 {state.fieldErrors?.birthYear && (
                   <p className="mt-1 text-xs text-red-500">

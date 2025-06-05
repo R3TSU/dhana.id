@@ -48,16 +48,31 @@ const completeProfileFormSchema = z.object({
   whatsappNumber: z
     .string()
     .min(1, { message: "WhatsApp number is required." }),
-  address: z.string().optional(),
-  birthDay: z.coerce.number().int().min(1).max(31).optional().nullable(),
-  birthMonth: z.coerce.number().int().min(1).max(12).optional().nullable(),
-  birthYear: z.coerce
-    .number()
+  address: z.string().min(1, { message: "Address is required" }),
+  birthDay: z.coerce
+    .number({
+      required_error: "Day is required",
+      invalid_type_error: "Day must be a number",
+    })
     .int()
-    .min(1900)
-    .max(new Date().getFullYear())
-    .optional()
-    .nullable(),
+    .min(1, "Day must be between 1 and 31")
+    .max(31, "Day must be between 1 and 31"),
+  birthMonth: z.coerce
+    .number({
+      required_error: "Month is required",
+      invalid_type_error: "Month must be a number",
+    })
+    .int()
+    .min(1, "Month must be between 1 and 12")
+    .max(12, "Month must be between 1 and 12"),
+  birthYear: z.coerce
+    .number({
+      required_error: "Year is required",
+      invalid_type_error: "Year must be a number",
+    })
+    .int()
+    .min(1900, "Year must be 1900 or later")
+    .max(new Date().getFullYear(), `Year cannot be in the future`),
   fromLessonSlug: z.string().optional(),
 });
 

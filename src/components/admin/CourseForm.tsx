@@ -10,7 +10,7 @@ import { useActionState, useState, useEffect, useRef } from "react";
 import { SubmitButton } from "./SubmitButton";
 import type { courses } from "@/db/schema";
 import Link from "next/link";
-import imageCompression from 'browser-image-compression';
+import imageCompression from "browser-image-compression";
 
 interface CourseFormProps {
   action: (prevState: any, formData: FormData) => Promise<any>; // Server action
@@ -56,7 +56,9 @@ export function CourseForm({
     }
   }, [state.errors, initialData, previewUrl]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       setPreviewUrl(initialData?.thumbnail_url || null);
@@ -66,32 +68,34 @@ export function CourseForm({
     try {
       // Compression options
       const options = {
-        maxSizeMB: 0.3,          // Maximum file size in MB (500KB)
-        maxWidthOrHeight: 400,   // Maximum width or height (whichever is larger)
-        useWebWorker: true,      // Use web worker for better performance
-        fileType: file.type,     // Keep the original file type
-        initialQuality: 0.8,     // Initial quality (0.8 = 80%)
-        maxIteration: 10,        // Maximum number of compression iterations
+        maxSizeMB: 0.3, // Maximum file size in MB (500KB)
+        maxWidthOrHeight: 400, // Maximum width or height (whichever is larger)
+        useWebWorker: true, // Use web worker for better performance
+        fileType: file.type, // Keep the original file type
+        initialQuality: 0.8, // Initial quality (0.8 = 80%)
+        maxIteration: 10, // Maximum number of compression iterations
       };
 
       // Compress the image
       const compressedFile = await imageCompression(file, options);
-      
+
       // Create preview URL from compressed file
       const previewUrl = URL.createObjectURL(compressedFile);
-      
+
       // Update the file input with the compressed file
       if (fileInputRef.current) {
         // Create a new DataTransfer object to update the file input
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(new File([compressedFile], file.name, { type: compressedFile.type }));
+        dataTransfer.items.add(
+          new File([compressedFile], file.name, { type: compressedFile.type }),
+        );
         fileInputRef.current.files = dataTransfer.files;
       }
-      
+
       setPreviewUrl(previewUrl);
       setRemoveThumbnailFlag(false);
     } catch (error) {
-      console.error('Error compressing image:', error);
+      console.error("Error compressing image:", error);
       // Fallback to original file if compression fails
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -243,7 +247,8 @@ export function CourseForm({
           aria-describedby="file-constraints"
         />
         <p id="file-constraints" className="mt-1 text-xs text-gray-500">
-        Images will be automatically compressed to max 400px width/height and 300KB
+          Images will be automatically compressed to max 400px width/height and
+          300KB
         </p>
         {removeThumbnailFlag && (
           <input type="hidden" name="removeThumbnail" value="true" />
