@@ -29,7 +29,11 @@ const initialState: {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full bg-purple-500 hover:bg-purple-600 text-white" disabled={pending}>
+    <Button
+      type="submit"
+      className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+      disabled={pending}
+    >
       {pending ? "Saving..." : "Save and Continue"}
     </Button>
   );
@@ -149,7 +153,7 @@ export default function CompleteProfileForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Date of Birth (Optional)</Label>
+        <Label>Date of Birth</Label>
         <div className="grid grid-cols-3 gap-3">
           <div>
             <Label htmlFor="birthDay" className="text-xs">
@@ -191,7 +195,7 @@ export default function CompleteProfileForm({
           </div>
           <div>
             <Label htmlFor="birthYear" className="text-xs">
-              Year (Optional)
+              Year (*)
             </Label>
             <Input
               id="birthYear"
@@ -201,6 +205,7 @@ export default function CompleteProfileForm({
               min="1900"
               max={new Date().getFullYear()}
               className="mt-1"
+              required
             />
             {state.fieldErrors?.birthYear && (
               <p className="mt-1 text-xs text-red-500">

@@ -36,7 +36,7 @@ const CourseCard = ({
     <div
       className={`card group h-full flex mb-8 flex-col ${isAvailable ? "cursor-pointer transform transition-all duration-300 hover:scale-105" : "cursor-not-allowed"} bg-transparent`}
     >
-      <div className="relative w-full overflow-hidden rounded-lg bg-transparent border-2 border-white">
+      <div className="relative w-full h-full overflow-hidden rounded-lg bg-transparent border-2 border-white flex flex-col">
         {isAvailable ? (
           <ProgressBarLink href={`/course/${slug}`} className="block">
             <div className="bg-black/70 aspect-[4/3]">
@@ -49,9 +49,10 @@ const CourseCard = ({
                 style={{ backgroundColor: "transparent" }}
               />
             </div>
-            <div className="p-4 bg-white/70 flex flex-col flex-grow">
-              <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
-              <p className="text-gray-600 mt-2">{subtitle}</p>
+            <div className="p-4 bg-white/70 flex flex-col flex-grow min-h-[180px]">
+              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">{title}</h2>
+              {subtitle && <p className="text-gray-600 mt-2 line-clamp-3">{subtitle}</p>}
+              <div className="flex-grow"></div>
             </div>
           </ProgressBarLink>
         ) : (
@@ -66,9 +67,10 @@ const CourseCard = ({
                 style={{ backgroundColor: "transparent" }}
               />
             </div>
-            <div className="p-4 bg-white/70 flex flex-col flex-grow">
-              <h2 className="text-xl font-semibold text-purple-800">{title}</h2>
-              <p className="text-gray-600 mt-2">{description}</p>
+            <div className="p-4 bg-white/70 flex flex-col flex-grow min-h-[180px]">
+              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">{title}</h2>
+              <p className="text-gray-600 mt-2 line-clamp-3">{description}</p>
+              <div className="flex-grow"></div>
             </div>
           </div>
         )}
