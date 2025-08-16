@@ -31,6 +31,9 @@ export default async function AdminCoursesPage() {
             <thead className="bg-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Order
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Title
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -56,6 +59,11 @@ export default async function AdminCoursesPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {courses.map((course) => (
                 <tr key={course.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {course.sort_order ?? "—"}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {course.title}

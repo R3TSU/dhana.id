@@ -50,23 +50,23 @@ export default async function Home() {
           <section className="">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
               {coursesData.map((course: PublicCourse) => (
-                <div className="h-full">
+                <div key={course.id} className="h-full">
                   <CourseCard
-                  key={course.id}
-                  id={course.id} // Keep id for React key
-                  slug={course.slug} // Pass slug for navigation
-                  title={course.title}
-                  subtitle={course.subtitle}
-                  description={
-                    course.description ?? "No description available."
-                  }
-                  thumbnailUrl={
-                    course.thumbnailUrl ??
-                    "https://placehold.co/600x200/slate/white?text=No+Image"
-                  } // Default placeholder
-                  isActive={course.isActive}
-                  startDate={course.startDate}
-                />
+                    key={course.id}
+                    id={course.id} // Keep id for React key
+                    slug={course.slug} // Pass slug for navigation
+                    title={course.title}
+                    subtitle={course.subtitle}
+                    description={
+                      course.description ?? "No description available."
+                    }
+                    thumbnailUrl={
+                      course.thumbnailUrl ??
+                      "https://placehold.co/600x200/slate/white?text=No+Image"
+                    } // Default placeholder
+                    isActive={course.isActive}
+                    startDate={course.startDate}
+                  />
                 </div>
               ))}
             </div>

@@ -1,0 +1,1 @@
+ALTER TABLE "courses" ADD COLUMN "allow_auto_enroll" boolean DEFAULT true NOT NULL;

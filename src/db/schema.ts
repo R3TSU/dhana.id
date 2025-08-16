@@ -49,13 +49,16 @@ export const courses = pgTable(
     subtitle: text("subtitle"),
     description: text("description"),
     thumbnail_url: text("thumbnail_url"),
+    sort_order: integer("sort_order"),
     is_active: boolean("is_active").default(true).notNull(),
+    allow_auto_enroll: boolean("allow_auto_enroll").default(true).notNull(),
     start_date: timestamp("start_date"),
     created_at: timestamp("created_at").defaultNow(),
     updated_at: timestamp("updated_at").defaultNow(),
   },
   (table) => [
     index("courses_slug_idx").on(table.slug),
+    index("courses_sort_order_idx").on(table.sort_order),
     uniqueIndex("courses_title_idx").on(table.title),
   ],
 );

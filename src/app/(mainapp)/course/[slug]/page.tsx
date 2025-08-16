@@ -46,9 +46,10 @@ export default async function CoursePage({
 
   // Attempt to enroll the user in the course (silently)
   // This will create an enrollment record if one doesn't exist for the current user and this course.
-  // For now, all enrollments are free and happen automatically upon visiting the course page.
+  // Only if auto-enrollment is allowed for this course.
   let daysSinceEnrollment = 0; // Default to 0 if not enrolled or error
   let enrollmentError: string | null = null;
+  let isAutoEnrollDisabled = false;
 
   if (course && course.id) {
     const enrollmentCheck = await enrollInCourse(course.id); // Ensure enrollment record exists
@@ -56,12 +57,19 @@ export default async function CoursePage({
       enrollmentCheck.error &&
       !enrollmentCheck.message?.includes("already enrolled")
     ) {
-      // Log significant errors, but don't block page load for enrollment issues
-      console.warn(
-        `Auto-enrollment check/attempt failed for course ${course.id}: ${enrollmentCheck.error}`,
-      );
-      enrollmentError =
-        "Could not verify enrollment status. Content may be restricted.";
+      // Check if the error is due to auto-enrollment being disabled
+      if (enrollmentCheck.error.includes("Auto-enrollment is not allowed")) {
+        isAutoEnrollDisabled = true;
+        enrollmentError =
+          "To access this course, please contact the administrator.";
+      } else {
+        // Log significant errors, but don't block page load for enrollment issues
+        console.warn(
+          `Auto-enrollment check/attempt failed for course ${course.id}: ${enrollmentCheck.error}`,
+        );
+        enrollmentError =
+          "Could not verify enrollment status. Content may be restricted.";
+      }
     } else {
       // Fetch enrollment date to calculate days since enrollment
       const { enrollmentDate, error: fetchEnrollmentError } =
@@ -151,7 +159,9 @@ export default async function CoursePage({
             {/* Lessons Grid */}
             <div className="mb-16">
               {enrollmentError && (
-                <p className="text-sm text-red-500 mb-4">{enrollmentError}</p>
+                <p className="text-sm text-red-500 mb-4 bg-white p-2">
+                  {enrollmentError}
+                </p>
               )}
               {processedLessonsWithOverrides &&
               processedLessonsWithOverrides.length > 0 ? (

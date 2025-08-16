@@ -50,8 +50,12 @@ const CourseCard = ({
               />
             </div>
             <div className="p-4 bg-white/70 flex flex-col flex-grow min-h-[180px]">
-              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">{title}</h2>
-              {subtitle && <p className="text-gray-600 mt-2 line-clamp-3">{subtitle}</p>}
+              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="text-gray-600 mt-2 line-clamp-3">{subtitle}</p>
+              )}
               <div className="flex-grow"></div>
             </div>
           </ProgressBarLink>
@@ -68,7 +72,9 @@ const CourseCard = ({
               />
             </div>
             <div className="p-4 bg-white/70 flex flex-col flex-grow min-h-[180px]">
-              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">{title}</h2>
+              <h2 className="text-xl font-semibold text-purple-800 line-clamp-2">
+                {title}
+              </h2>
               <p className="text-gray-600 mt-2 line-clamp-3">{description}</p>
               <div className="flex-grow"></div>
             </div>

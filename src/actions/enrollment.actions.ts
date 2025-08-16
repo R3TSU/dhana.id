@@ -123,13 +123,14 @@ export async function enrollInCourse(
   try {
     const courseExists = await db.query.courses.findFirst({
       where: eq(courses.id, courseId),
-      columns: { id: true },
+      columns: { id: true, allow_auto_enroll: true },
     });
 
     if (!courseExists) {
       return { enrollment: null, error: "Course not found.", success: false };
     }
 
+    // First, check if the user is already enrolled regardless of auto-enroll setting
     const existingEnrollment = await db.query.course_enrollments.findFirst({
       where: and(
         eq(course_enrollments.courseId, courseId),
@@ -143,6 +144,15 @@ export async function enrollInCourse(
         error: null,
         success: true,
         message: "User already enrolled in this course.",
+      };
+    }
+
+    // If not already enrolled, enforce auto-enroll policy
+    if (!courseExists.allow_auto_enroll) {
+      return {
+        enrollment: null,
+        error: "Auto-enrollment is not allowed for this course.",
+        success: false,
       };
     }
 
@@ -279,7 +289,21 @@ export async function grantLessonAccessOnSignup(
       return { success: false, error: "Course ID not found for this lesson." };
     }
 
-    // 2. Ensure user is enrolled in the course
+    // 2. Check if the course allows auto-enrollment
+    const courseDetails = await db.query.courses.findFirst({
+      where: eq(courses.id, courseId),
+      columns: { allow_auto_enroll: true },
+    });
+
+    if (!courseDetails || !courseDetails.allow_auto_enroll) {
+      return {
+        success: false,
+        error:
+          "This course does not allow auto-enrollment through lesson sharing.",
+      };
+    }
+
+    // 3. Ensure user is enrolled in the course
     const enrollmentResult = await enrollInCourse(courseId, internalUserId);
     if (!enrollmentResult.success) {
       return {
