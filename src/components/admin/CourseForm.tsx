@@ -179,6 +179,34 @@ export function CourseForm({
       </div>
 
       <div className="flex space-x-6">
+        <div>
+          <label
+            htmlFor="sort_order"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Sort Order (Optional)
+          </label>
+          <input
+            type="number"
+            id="sort_order"
+            name="sort_order"
+            defaultValue={
+              typeof initialData?.sort_order === "number"
+                ? String(initialData.sort_order)
+                : ""
+            }
+            className="mt-1 block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Lower numbers appear first. Leave blank to place after ordered
+            items.
+          </p>
+          {state.errors?.sort_order && (
+            <p className="mt-1 text-xs text-red-500">
+              {state.errors.sort_order.join(", ")}
+            </p>
+          )}
+        </div>
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -196,6 +224,27 @@ export function CourseForm({
           {state.errors?.is_active && (
             <p className="mt-1 text-xs text-red-500">
               {state.errors.is_active.join(", ")}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="allow_auto_enroll"
+            name="allow_auto_enroll"
+            defaultChecked={initialData?.allow_auto_enroll !== false}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <label
+            htmlFor="allow_auto_enroll"
+            className="ml-2 block text-sm text-gray-700"
+          >
+            Allow Auto Enrollment
+          </label>
+          {state.errors?.allow_auto_enroll && (
+            <p className="mt-1 text-xs text-red-500">
+              {state.errors.allow_auto_enroll.join(", ")}
             </p>
           )}
         </div>

@@ -7,6 +7,8 @@ import {
 } from "@/actions/admin/enrollment.actions";
 import { PaginationControls } from "@/components/shared/PaginationControls"; // Assuming this exists or will be created
 import EnrollmentFilterClient from "@/components/admin/enrollments/EnrollmentFilterClient";
+import { Button } from "@/components/ui/button";
+import EnrollmentRowActions from "@/components/admin/enrollments/EnrollmentRowActions";
 
 // Removed AdminEnrollmentsPageProps interface
 
@@ -49,6 +51,9 @@ async function EnrollmentsTable({
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Enrollment Date
             </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -68,6 +73,14 @@ async function EnrollmentsTable({
                 <div className="text-sm text-gray-900">
                   {new Date(enrollment.enrollmentDate).toLocaleDateString()}
                 </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <EnrollmentRowActions
+                  enrollmentId={enrollment.enrollmentId}
+                  currentDateIso={new Date(
+                    enrollment.enrollmentDate,
+                  ).toISOString()}
+                />
               </td>
             </tr>
           ))}
@@ -106,7 +119,9 @@ export default async function AdminEnrollmentsPage({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">User Enrollments</h1>
-        {/* Optional: Add a button or link here if needed */}
+        <Link href="/admin/enrollments/new">
+          <Button>New Enrollment</Button>
+        </Link>
       </div>
 
       <div className="mb-4">

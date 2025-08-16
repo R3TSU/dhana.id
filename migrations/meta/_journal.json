@@ -71,6 +71,20 @@
       "when": 1748573844178,
       "tag": "0009_sudden_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1755279419361,
+      "tag": "0010_famous_post",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1755329344053,
+      "tag": "0011_wild_baron_strucker",
+      "breakpoints": true
     }
   ]
 }

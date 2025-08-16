@@ -4,7 +4,7 @@
 import { db } from "@/db/drizzle";
 import { uploadFileToR2, deleteFileFromR2 } from "@/lib/r2";
 import { courses } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -16,7 +16,21 @@ const courseFormSchema = z.object({
   subtitle: z.string().optional(),
   description: z.string().optional(),
   thumbnail_url: z.string().url("Invalid URL format").nullable().optional(),
+  sort_order: z
+    .preprocess((v) => (typeof v === "string" ? v.trim() : v), z.any())
+    .transform((v) => {
+      if (v === undefined || v === null || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    })
+    .nullable()
+    .optional(),
   is_active: z.preprocess(
+    // Convert checkbox input value to boolean
+    (val) => val === "on" || val === true || val === "true",
+    z.boolean().default(true),
+  ),
+  allow_auto_enroll: z.preprocess(
     // Convert checkbox input value to boolean
     (val) => val === "on" || val === true || val === "true",
     z.boolean().default(true),
@@ -38,7 +52,9 @@ const courseDbSchema = z.object({
   subtitle: z.string().optional(),
   description: z.string().optional(),
   thumbnail_url: z.string().url("Invalid URL format").nullable().optional(),
+  sort_order: z.number().nullable().optional(),
   is_active: z.boolean().default(true),
+  allow_auto_enroll: z.boolean().default(true),
   start_date: z.date().nullable().optional(),
 });
 
@@ -47,7 +63,11 @@ export async function getAllCourses() {
     const data = await db
       .select()
       .from(courses)
-      .orderBy(desc(courses.created_at));
+      .orderBy(
+        sql`CASE WHEN ${courses.sort_order} IS NULL THEN 1 ELSE 0 END`,
+        courses.sort_order,
+        desc(courses.created_at),
+      );
     return { data, error: null };
   } catch (error) {
     console.error("Error fetching courses:", error);
@@ -101,7 +121,9 @@ export async function createCourse(prevState: any, formData: FormData) {
     subtitle: formData.get("subtitle"),
     description: formData.get("description"),
     thumbnail_url: uploadedThumbnailUrl, // Corrected: Use the R2 URL or null
+    sort_order: formData.get("sort_order"),
     is_active: formData.get("is_active"),
+    allow_auto_enroll: formData.get("allow_auto_enroll"),
     start_date: formData.get("start_date"),
   });
 
@@ -239,7 +261,9 @@ export async function updateCourse(
     subtitle: formData.get("subtitle"),
     description: formData.get("description"),
     thumbnail_url: newThumbnailUrl, // Corrected: Use the derived R2 URL, existing URL, or null
+    sort_order: formData.get("sort_order"),
     is_active: formData.get("is_active"),
+    allow_auto_enroll: formData.get("allow_auto_enroll"),
     start_date: formData.get("start_date"),
   });
 
@@ -362,7 +386,6 @@ export async function deleteCourse(id: number) {
 
 // Type for public-facing course data
 import { lessons } from "@/db/schema"; // Added import for lessons table
-import { and } from "drizzle-orm"; // Added for potential future complex queries
 
 export type PublicCourse = {
   id: string;
@@ -392,8 +415,17 @@ export async function getPublicCourses(): Promise<{
         startDate: courses.start_date,
       })
       .from(courses)
-      .orderBy(courses.created_at) // Show newest first
-      .where(eq(courses.is_active, true)); // Only return active courses
+      .orderBy(
+        sql`CASE WHEN ${courses.sort_order} IS NULL THEN 1 ELSE 0 END`,
+        courses.sort_order,
+        desc(courses.created_at),
+      )
+      .where(
+        and(
+          eq(courses.is_active, true), // Only return active courses
+          // eq(courses.allow_auto_enroll, true) // Only return courses that allow auto-enrollment
+        ),
+      );
 
     const processedData: PublicCourse[] = courseData.map((course) => ({
       ...course,
