@@ -2,13 +2,6 @@ import { getUsers } from "@/actions/admin/user.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -121,7 +114,7 @@ export default async function UsersPage({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Link href={`/admin/users/${user.id}`}>
+                          <Link href={`/admin/users/${user.id}`} prefetch={false}>
                             <Button
                               size="sm"
                               variant="outline"
@@ -131,7 +124,7 @@ export default async function UsersPage({
                               <PencilIcon size={14} />
                             </Button>
                           </Link>
-                          <Link href={`/admin/users/${user.id}/delete`}>
+                          <Link href={`/admin/users/${user.id}/delete`} prefetch={false}>
                             <Button
                               size="sm"
                               variant="outline"
