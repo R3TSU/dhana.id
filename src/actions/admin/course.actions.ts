@@ -509,7 +509,8 @@ export async function getCourseWithLessonsBySlug(courseSlug: string): Promise<{
     return { course, lessons: processedLessons, error: null };
   } catch (error) {
     console.error(
-      `Error fetching course with lessons by slug (${courseSlug}):`,
+      "Error fetching course with lessons by slug (%s):",
+      courseSlug,
       error,
     );
     return {
