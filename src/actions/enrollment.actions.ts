@@ -392,7 +392,9 @@ export async function hasLessonAccessOverride(
     return !!override;
   } catch (error) {
     console.error(
-      `Error checking lesson access override for lessonId ${lessonId}, userId ${internalUserId}:`,
+      "Error checking lesson access override for lessonId %s, userId %s:",
+      lessonId,
+      internalUserId,
       error,
     );
     return false; // Fail safe: if error, assume no override
