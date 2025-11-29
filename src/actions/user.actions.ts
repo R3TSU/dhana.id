@@ -199,13 +199,13 @@ export async function completeUserProfile(
         .where(eq(users.id, existingUser.id));
 
       // Invalidate the user cache
-      revalidateTag(`user-by-clerk-id`);
+      revalidateTag(`user-by-clerk-id`, 'max');
     } else {
       // Create new user
       await db.insert(users).values(userData);
 
       // Invalidate the user cache
-      revalidateTag(`user-by-clerk-id`);
+      revalidateTag(`user-by-clerk-id`, 'max');
     }
 
     revalidatePath("/profile"); // Revalidate profile page if you have one
@@ -395,7 +395,7 @@ export async function updateUserProfile(
       .where(eq(users.id, internalUser.id));
 
     // Invalidate the user cache
-    revalidateTag(`user-by-clerk-id`);
+    revalidateTag(`user-by-clerk-id`, 'max');
 
     revalidatePath("/profile");
 
