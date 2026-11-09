@@ -1,25 +1,36 @@
 "use client";
-// import '@vidstack/react/player/styles/base.css';
-// import '@vidstack/react/player/styles/plyr/theme.css';
-import "@vidstack/react/player/styles/default/theme.css";
-import "@vidstack/react/player/styles/default/layouts/video.css";
-import { MediaPlayer, MediaProvider } from "@vidstack/react";
+
+import "@videojs/react/video/skin.css";
+import { resolveAdapterType } from "@videojs/react";
 import {
-  defaultLayoutIcons,
-  DefaultVideoLayout,
-} from "@vidstack/react/player/layouts/default";
-import {
-  type MediaCanPlayEvent,
-  type MediaPlayEvent,
-  type MediaPlayRequestEvent,
-  type MediaStartedEvent,
-  type MediaTimeUpdateEvent,
-  type MediaTimeUpdateEventDetail,
-} from "@vidstack/react";
-// import { PlyrLayout, plyrLayoutIcons } from '@vidstack/react/player/layouts/plyr';
-import "./video-player-styles.css";
-import { useEffect, useState, useRef } from "react";
+  Video,
+  VideoPlayer as BaseVideoPlayer,
+  VideoSkin,
+  usePlayer,
+} from "@videojs/react/video";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/components/AnalyticsContext";
+
+const HlsJsVideo = lazy(() =>
+  import("@videojs/react/media/hlsjs-video").then((m) => ({
+    default: m.HlsJsVideo,
+  })),
+);
+const DashVideo = lazy(() =>
+  import("@videojs/react/media/dash-video").then((m) => ({
+    default: m.DashVideo,
+  })),
+);
+const YouTubeVideo = lazy(() =>
+  import("@videojs/react/media/youtube-video").then((m) => ({
+    default: m.YouTubeVideo,
+  })),
+);
+const VimeoVideo = lazy(() =>
+  import("@videojs/react/media/vimeo-video").then((m) => ({
+    default: m.VimeoVideo,
+  })),
+);
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -28,23 +39,37 @@ interface VideoPlayerProps {
   courseId?: number | string;
 }
 
-export default function VideoPlayer({
-  videoUrl,
-  title = "Lesson Video",
+function Media({ src }: { src: string }) {
+  switch (resolveAdapterType(src)) {
+    case "youtube":
+      return <YouTubeVideo src={src} />;
+    case "vimeo":
+      return <VimeoVideo src={src} />;
+    case "hls":
+      return (
+        <HlsJsVideo src={src} playsInline crossOrigin="anonymous" />
+      );
+    case "dash":
+      return <DashVideo src={src} playsInline crossOrigin="anonymous" />;
+    default:
+      return <Video src={src} playsInline crossOrigin="anonymous" />;
+  }
+}
+
+function AnalyticsTracker({
   lessonId,
+  title,
   courseId,
-}: VideoPlayerProps) {
-  // Use state to control when to render the player
-  const [isMounted, setIsMounted] = useState(false);
+}: {
+  lessonId?: number | string;
+  title: string;
+  courseId?: number | string;
+}) {
   const { trackEvent } = useAnalytics();
+  const currentTime = usePlayer((state) => state.currentTime);
+  const duration = usePlayer((state) => state.duration);
+  const paused = usePlayer((state) => state.paused);
 
-  // Track video progress
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  // Track progress markers to avoid duplicate events
   const progressMarkers = useRef({
     started: false,
     quarter: false,
@@ -52,107 +77,89 @@ export default function VideoPlayer({
     threeQuarters: false,
     completed: false,
   });
+  const hasStarted = useRef(false);
+  const prevPaused = useRef<boolean | null>(null);
 
-  // Only render the player on the client side
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    if (!duration) return;
 
-  // Handle video time updates
-  const handleTimeUpdate = (
-    detail: MediaTimeUpdateEventDetail,
-    nativeEvent: MediaTimeUpdateEvent,
-  ) => {
-    const newCurrentTime = detail.currentTime;
-    const newDuration = nativeEvent.target.duration;
+    const percentage = (currentTime / duration) * 100;
 
-    setCurrentTime(newCurrentTime);
-    if (newDuration && newDuration !== duration) {
-      setDuration(newDuration);
+    if (!progressMarkers.current.started && percentage > 1) {
+      trackEvent("video_started", {
+        lesson_id: lessonId,
+        lesson_title: title,
+        course_id: courseId,
+        video_duration: duration,
+      });
+      progressMarkers.current.started = true;
+      hasStarted.current = true;
     }
 
-    // Calculate progress percentage
-    if (newDuration) {
-      const percentage = (newCurrentTime / newDuration) * 100;
-
-      // Track video start
-      if (!progressMarkers.current.started && percentage > 1) {
-        trackEvent("video_started", {
-          lesson_id: lessonId,
-          lesson_title: title,
-          course_id: courseId,
-          video_duration: newDuration,
-        });
-        progressMarkers.current.started = true;
-        setHasStarted(true);
-      }
-
-      // Track 25% progress
-      if (!progressMarkers.current.quarter && percentage >= 25) {
-        trackEvent("video_progress", {
-          lesson_id: lessonId,
-          lesson_title: title,
-          course_id: courseId,
-          progress_percentage: 25,
-          current_time: newCurrentTime,
-        });
-        progressMarkers.current.quarter = true;
-      }
-
-      // Track 50% progress
-      if (!progressMarkers.current.half && percentage >= 50) {
-        trackEvent("video_progress", {
-          lesson_id: lessonId,
-          lesson_title: title,
-          course_id: courseId,
-          progress_percentage: 50,
-          current_time: newCurrentTime,
-        });
-        progressMarkers.current.half = true;
-      }
-
-      // Track 75% progress
-      if (!progressMarkers.current.threeQuarters && percentage >= 75) {
-        trackEvent("video_progress", {
-          lesson_id: lessonId,
-          lesson_title: title,
-          course_id: courseId,
-          progress_percentage: 75,
-          current_time: newCurrentTime,
-        });
-        progressMarkers.current.threeQuarters = true;
-      }
-
-      // Track video completion (95% to account for buffering/ending credits)
-      if (!progressMarkers.current.completed && percentage >= 95) {
-        trackEvent("video_completed", {
-          lesson_id: lessonId,
-          lesson_title: title,
-          course_id: courseId,
-          watch_time: newCurrentTime,
-        });
-        progressMarkers.current.completed = true;
-      }
+    if (!progressMarkers.current.quarter && percentage >= 25) {
+      trackEvent("video_progress", {
+        lesson_id: lessonId,
+        lesson_title: title,
+        course_id: courseId,
+        progress_percentage: 25,
+        current_time: currentTime,
+      });
+      progressMarkers.current.quarter = true;
     }
-  };
 
-  // Handle play/pause events
-  const handlePlay = () => {
-    setIsPlaying(true);
-    if (currentTime < 1) {
-      progressMarkers.current = {
-        started: false,
-        quarter: false,
-        half: false,
-        threeQuarters: false,
-        completed: false,
-      };
+    if (!progressMarkers.current.half && percentage >= 50) {
+      trackEvent("video_progress", {
+        lesson_id: lessonId,
+        lesson_title: title,
+        course_id: courseId,
+        progress_percentage: 50,
+        current_time: currentTime,
+      });
+      progressMarkers.current.half = true;
     }
-  };
 
-  const handlePause = () => {
-    if (hasStarted && isPlaying) {
-      setIsPlaying(false);
+    if (!progressMarkers.current.threeQuarters && percentage >= 75) {
+      trackEvent("video_progress", {
+        lesson_id: lessonId,
+        lesson_title: title,
+        course_id: courseId,
+        progress_percentage: 75,
+        current_time: currentTime,
+      });
+      progressMarkers.current.threeQuarters = true;
+    }
+
+    if (!progressMarkers.current.completed && percentage >= 95) {
+      trackEvent("video_completed", {
+        lesson_id: lessonId,
+        lesson_title: title,
+        course_id: courseId,
+        watch_time: currentTime,
+      });
+      progressMarkers.current.completed = true;
+    }
+  }, [currentTime, duration, lessonId, title, courseId, trackEvent]);
+
+  useEffect(() => {
+    if (prevPaused.current === null) {
+      prevPaused.current = paused;
+      return;
+    }
+    if (prevPaused.current === paused) return;
+    prevPaused.current = paused;
+
+    if (!paused) {
+      if (currentTime < 1) {
+        progressMarkers.current = {
+          started: false,
+          quarter: false,
+          half: false,
+          threeQuarters: false,
+          completed: false,
+        };
+        hasStarted.current = false;
+      }
+    } else if (hasStarted.current) {
       trackEvent("video_paused", {
         lesson_id: lessonId,
         lesson_title: title,
@@ -160,22 +167,29 @@ export default function VideoPlayer({
         current_time: currentTime,
       });
     }
-  };
+  }, [paused, currentTime, lessonId, title, courseId, trackEvent]);
 
-  // Handle provider change to prevent errors
-  const handleProviderChange = (provider: any) => {
-    // Skip processing if provider is undefined (prevents error)
-    if (!provider) return;
-  };
+  return null;
+}
 
-  // Show a placeholder while loading on the server or during hydration
+export default function VideoPlayer({
+  videoUrl,
+  title = "Lesson Video",
+  lessonId,
+  courseId,
+}: VideoPlayerProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   if (!isMounted) {
     return (
       <div
         className="w-full max-w-full mx-auto overflow-hidden"
         style={{ aspectRatio: "16/9" }}
       >
-        {/* Optional loading indicator */}
         <div className="flex items-center justify-center h-full text-white">
           <span>Loading video player...</span>
         </div>
@@ -183,31 +197,23 @@ export default function VideoPlayer({
     );
   }
 
-  // Render the actual player only on the client side
   return (
     <div
+      data-testid="video-player"
       className="w-full max-w-full mx-auto overflow-hidden"
-      style={{ aspectRatio: "16/9" }}
     >
-      <MediaPlayer
-        className="w-full"
-        title={title}
-        src={videoUrl}
-        aspectRatio="16/9"
-        viewType="video"
-        streamType="on-demand"
-        logLevel="silent" // Change from warn to silent to suppress errors
-        crossOrigin
-        playsInline
-        storage="storage-key"
-        onProviderChange={handleProviderChange}
-        onTimeUpdate={handleTimeUpdate}
-        onPlay={handlePlay}
-        onPause={handlePause}
-      >
-        <MediaProvider></MediaProvider>
-        <DefaultVideoLayout icons={defaultLayoutIcons} />
-      </MediaPlayer>
+      <BaseVideoPlayer title={title}>
+        <VideoSkin className="w-full" style={{ aspectRatio: "16 / 9" }}>
+          <Suspense fallback={null}>
+            <Media key={videoUrl} src={videoUrl} />
+          </Suspense>
+          <AnalyticsTracker
+            lessonId={lessonId}
+            title={title}
+            courseId={courseId}
+          />
+        </VideoSkin>
+      </BaseVideoPlayer>
     </div>
   );
 }
